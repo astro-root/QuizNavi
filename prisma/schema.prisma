@@ -1,0 +1,248 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  USER
+  ORGANIZER
+  ADMIN
+}
+
+enum TournamentFormat {
+  OFFLINE
+  ONLINE
+  HYBRID
+}
+
+enum Region {
+  HOKKAIDO
+  TOHOKU
+  KANTO
+  CHUBU
+  KINKI
+  CHUGOKU
+  SHIKOKU
+  KYUSHU_OKINAWA
+  ONLINE_ONLY
+}
+
+enum Prefecture {
+  HOKKAIDO
+  AOMORI
+  IWATE
+  MIYAGI
+  AKITA
+  YAMAGATA
+  FUKUSHIMA
+  IBARAKI
+  TOCHIGI
+  GUNMA
+  SAITAMA
+  CHIBA
+  TOKYO
+  KANAGAWA
+  NIIGATA
+  TOYAMA
+  ISHIKAWA
+  FUKUI
+  YAMANASHI
+  NAGANO
+  GIFU
+  SHIZUOKA
+  AICHI
+  MIE
+  SHIGA
+  KYOTO
+  OSAKA
+  HYOGO
+  NARA
+  WAKAYAMA
+  TOTTORI
+  SHIMANE
+  OKAYAMA
+  HIROSHIMA
+  YAMAGUCHI
+  TOKUSHIMA
+  KAGAWA
+  EHIME
+  KOCHI
+  FUKUOKA
+  SAGA
+  NAGASAKI
+  KUMAMOTO
+  OITA
+  MIYAZAKI
+  KAGOSHIMA
+  OKINAWA
+}
+
+enum TournamentStatus {
+  BEFORE_OPEN
+  OPEN
+  CLOSED
+  FINISHED
+  CANCELED
+  UPDATED
+}
+
+enum PublishStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  REJECTED
+}
+
+enum TagCategory {
+  FORMAT
+  TREND
+  AUDIENCE
+  DIFFICULTY
+  OTHER
+}
+
+enum EligibilityLevel {
+  ANYONE
+  MIDDLE_SCHOOL
+  HIGH_SCHOOL
+  MIDDLE_AND_HIGH
+  BEGINNER_WELCOME
+}
+
+model User {
+  id            String   @id @default(uuid())
+  authId        String   @unique
+  email         String   @unique
+  name          String
+  role          Role     @default(USER)
+  avatarUrl     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tournaments   Tournament[] @relation("OrganizerTournaments")
+  approvals     ApprovalLog[] @relation("ApprovedByAdmin")
+
+  @@index([role])
+  @@map("users")
+}
+
+model Tag {
+  id        String      @id @default(uuid())
+  name      String      @unique
+  category  TagCategory
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  tournaments TournamentTag[]
+
+  @@index([category])
+  @@map("tags")
+}
+
+model Tournament {
+  id             String            @id @default(uuid())
+  slug           String            @unique
+
+  name           String
+  organizerId    String
+  organizer      User              @relation("OrganizerTournaments", fields: [organizerId], references: [id])
+
+  description    String?
+
+  startAt        DateTime
+  endAt          DateTime?
+  entryDeadline  DateTime?
+
+  format         TournamentFormat
+
+  region         Region?
+  prefecture     Prefecture?
+  city           String?
+  venueName      String?
+  address        String?
+
+  capacity       Int?
+  eligibility    String
+  eligibilityLevel EligibilityLevel @default(ANYONE)
+  fee            String
+  belongings     String?
+  contact        String
+
+  logoUrl        String?
+  timetableUrl   String?
+  questionTrend  String?
+  pdfUrl         String?
+  rulesUrl       String?
+  officialX      String?
+  officialSite   String?
+  entryFormUrl   String?
+  entryListUrl   String?
+  others         String?
+
+  status         TournamentStatus  @default(BEFORE_OPEN)
+  publishStatus  PublishStatus     @default(DRAFT)
+
+  viewCount      Int               @default(0)
+
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  tags           TournamentTag[]
+  approvalLogs   ApprovalLog[]
+
+  @@index([status])
+  @@index([publishStatus])
+  @@index([startAt])
+  @@index([entryDeadline])
+  @@index([region, prefecture])
+  @@index([organizerId])
+  @@map("tournaments")
+}
+
+model TournamentTag {
+  tournamentId String
+  tagId        String
+
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tag          Tag        @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([tournamentId, tagId])
+  @@index([tagId])
+  @@map("tournament_tags")
+}
+
+model ApprovalLog {
+  id           String        @id @default(uuid())
+  tournamentId String
+  tournament   Tournament    @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  adminId      String
+  admin        User          @relation("ApprovedByAdmin", fields: [adminId], references: [id])
+
+  fromStatus   PublishStatus
+  toStatus     PublishStatus
+  comment      String?
+
+  createdAt    DateTime      @default(now())
+
+  @@index([tournamentId])
+  @@map("approval_logs")
+}
+
+model Announcement {
+  id          String    @id @default(uuid())
+  title       String
+  body        String
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isPublished, publishedAt])
+  @@map("announcements")
+}
