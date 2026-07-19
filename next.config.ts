@@ -6,6 +6,14 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.supabase.co" },
     ],
   },
+  experimental: {
+    serverActions: {
+      allowedOrigins: [
+        "localhost:3000",
+        "*.app.github.dev",
+      ],
+    },
+  },
   async headers() {
     return [
       {

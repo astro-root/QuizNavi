@@ -246,3 +246,17 @@ model Announcement {
   @@index([isPublished, publishedAt])
   @@map("announcements")
 }
+
+model Inquiry {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String?
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("inquiries")
+}
