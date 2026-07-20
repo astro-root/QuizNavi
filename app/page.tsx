@@ -16,7 +16,7 @@ export default function HomePage() {
             もっと簡単に見つけよう
           </h1>
           <p className="mx-auto mb-8 max-w-2xl animate-in fade-in-0 slide-in-from-bottom-4 text-base text-muted-foreground duration-700 [animation-delay:100ms] fill-mode-both md:text-lg">
-            QuizNaviは中学生・高校生のためのクイズ大会検索サービス。開催日、地域、参加資格、問題傾向など、あなたにぴったりの大会を見つけられます。
+            QuizNaviは全国のクイズ大会を検索できるサービス。開催日、地域、参加資格、問題傾向など、あなたにぴったりの大会を見つけられます。
           </p>
           <div className="flex animate-in fade-in-0 slide-in-from-bottom-4 flex-col items-center justify-center gap-3 duration-700 [animation-delay:200ms] fill-mode-both sm:flex-row">
             <Button size="lg" className="transition-transform hover:-translate-y-0.5 active:translate-y-0" asChild>
