@@ -105,3 +105,11 @@
     max-width: 1280px;
   }
 }
+
+/* Google Places Autocomplete Element のスタイル調整 */
+.gm-autocomplete-container gmp-place-autocomplete {
+  width: 100%;
+  --gmpx-color-surface: var(--background);
+  --gmpx-color-on-surface: var(--foreground);
+  --gmpx-color-outline: var(--border);
+}
