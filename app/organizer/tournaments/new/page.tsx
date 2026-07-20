@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
+import { PREFECTURE_LABELS } from "@/lib/utils";
 import { FileUploadField } from "@/components/organizer/file-upload-field";
 
 const initialState: CreateTournamentState = {};
@@ -45,6 +46,7 @@ export default function NewTournamentPage() {
   );
   const [format, setFormat] = useState("");
   const [region, setRegion] = useState("");
+  const [prefecture, setPrefecture] = useState("");
   const [eligibilityLevel, setEligibilityLevel] = useState("ANYONE");
 
   return (
@@ -116,7 +118,18 @@ export default function NewTournamentPage() {
           </Field>
 
           <Field label="都道府県" error={state.fieldErrors?.prefecture}>
-            <Input name="prefecture" placeholder="例: TOKYO" />
+            <Select name="prefecture" value={prefecture} onValueChange={setPrefecture}>
+              <SelectTrigger>
+                <SelectValue placeholder="選択してください" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(PREFECTURE_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
 
           <div className="grid grid-cols-2 gap-4">
