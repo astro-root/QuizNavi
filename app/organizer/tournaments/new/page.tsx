@@ -15,6 +15,37 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { PREFECTURE_LABELS } from "@/lib/utils";
+
+const REGION_PREFECTURES: Record<string, string[]> = {
+  HOKKAIDO: ["HOKKAIDO"],
+  TOHOKU: ["AOMORI", "IWATE", "MIYAGI", "AKITA", "YAMAGATA", "FUKUSHIMA"],
+  KANTO: ["IBARAKI", "TOCHIGI", "GUNMA", "SAITAMA", "CHIBA", "TOKYO", "KANAGAWA"],
+  CHUBU: [
+    "NIIGATA",
+    "TOYAMA",
+    "ISHIKAWA",
+    "FUKUI",
+    "YAMANASHI",
+    "NAGANO",
+    "GIFU",
+    "SHIZUOKA",
+    "AICHI",
+  ],
+  KINKI: ["MIE", "SHIGA", "KYOTO", "OSAKA", "HYOGO", "NARA", "WAKAYAMA"],
+  CHUGOKU: ["TOTTORI", "SHIMANE", "OKAYAMA", "HIROSHIMA", "YAMAGUCHI"],
+  SHIKOKU: ["TOKUSHIMA", "KAGAWA", "EHIME", "KOCHI"],
+  KYUSHU_OKINAWA: [
+    "FUKUOKA",
+    "SAGA",
+    "NAGASAKI",
+    "KUMAMOTO",
+    "OITA",
+    "MIYAZAKI",
+    "KAGOSHIMA",
+    "OKINAWA",
+  ],
+  ONLINE_ONLY: [],
+};
 import { FileUploadField } from "@/components/organizer/file-upload-field";
 
 const initialState: CreateTournamentState = {};
@@ -47,6 +78,13 @@ export default function NewTournamentPage() {
   const [format, setFormat] = useState("");
   const [region, setRegion] = useState("");
   const [prefecture, setPrefecture] = useState("");
+
+  const availablePrefectures = region ? REGION_PREFECTURES[region] ?? [] : [];
+
+  const handleRegionChange = (value: string) => {
+    setRegion(value);
+    setPrefecture("");
+  };
   const [eligibilityLevel, setEligibilityLevel] = useState("ANYONE");
 
   return (
@@ -103,7 +141,7 @@ export default function NewTournamentPage() {
 
         <Section title="開催場所">
           <Field label="地域" error={state.fieldErrors?.region}>
-            <Select name="region" value={region} onValueChange={setRegion}>
+            <Select name="region" value={region} onValueChange={handleRegionChange}>
               <SelectTrigger>
                 <SelectValue placeholder="選択しない" />
               </SelectTrigger>
@@ -118,14 +156,27 @@ export default function NewTournamentPage() {
           </Field>
 
           <Field label="都道府県" error={state.fieldErrors?.prefecture}>
-            <Select name="prefecture" value={prefecture} onValueChange={setPrefecture}>
+            <Select
+              name="prefecture"
+              value={prefecture}
+              onValueChange={setPrefecture}
+              disabled={availablePrefectures.length === 0}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="選択してください" />
+                <SelectValue
+                  placeholder={
+                    region
+                      ? availablePrefectures.length === 0
+                        ? "この地域は都道府県の指定不要です"
+                        : "選択してください"
+                      : "先に地域を選択してください"
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(PREFECTURE_LABELS).map(([value, label]) => (
+                {availablePrefectures.map((value) => (
                   <SelectItem key={value} value={value}>
-                    {label}
+                    {PREFECTURE_LABELS[value]}
                   </SelectItem>
                 ))}
               </SelectContent>

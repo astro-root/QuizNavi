@@ -129,3 +129,52 @@ export async function createTournamentDraft(
 
   redirect(`/organizer/tournaments?created=${tournament.id}`);
 }
+
+async function assertOwnership(tournamentId: string, userId: string) {
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+  });
+  if (!tournament || tournament.organizerId !== userId) {
+    throw new Error("この大会を操作する権限がありません");
+  }
+  return tournament;
+}
+
+export async function publishTournament(tournamentId: string) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  await assertOwnership(tournamentId, user.id);
+
+  await prisma.tournament.update({
+    where: { id: tournamentId },
+    data: { publishStatus: "PUBLISHED" },
+  });
+
+  redirect(`/organizer/tournaments/${tournamentId}`);
+}
+
+export async function unpublishTournament(tournamentId: string) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  await assertOwnership(tournamentId, user.id);
+
+  await prisma.tournament.update({
+    where: { id: tournamentId },
+    data: { publishStatus: "DRAFT" },
+  });
+
+  redirect(`/organizer/tournaments/${tournamentId}`);
+}
+
+export async function deleteTournament(tournamentId: string) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  await assertOwnership(tournamentId, user.id);
+
+  await prisma.tournament.delete({ where: { id: tournamentId } });
+
+  redirect("/organizer/tournaments");
+}
