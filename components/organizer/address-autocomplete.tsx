@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Script from "next/script";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { MapPin, Loader2 } from "lucide-react";
 
 type Props = {
   name: string;
@@ -15,67 +15,116 @@ type Props = {
   }) => void;
 };
 
-declare global {
-  interface Window {
-    google: typeof google;
-  }
-}
+type NominatimResult = {
+  display_name: string;
+  lat: string;
+  lon: string;
+  name?: string;
+  namedetails?: { name?: string };
+};
 
 export function AddressAutocomplete({ name, defaultValue, onPlaceSelected }: Props) {
+  const [value, setValue] = useState(defaultValue ?? "");
+  const [results, setResults] = useState<NominatimResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const hiddenInputRef = useRef<HTMLInputElement>(null);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-  const [displayValue, setDisplayValue] = useState(defaultValue ?? "");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!scriptLoaded || !containerRef.current || !window.google) return;
-    if (containerRef.current.childElementCount > 0) return;
-
-    const el = new window.google.maps.places.PlaceAutocompleteElement({
-      includedRegionCodes: ["jp"],
-    });
-    el.classList.add("gm-autocomplete-el");
-    containerRef.current.appendChild(el);
-
-    el.addEventListener("gmp-select", async (event: unknown) => {
-      const placePrediction = (
-        event as { placePrediction: { toPlace: () => google.maps.places.Place } }
-      ).placePrediction;
-      const place = placePrediction.toPlace();
-      await place.fetchFields({
-        fields: ["formattedAddress", "displayName", "location"],
-      });
-
-      const address = place.formattedAddress ?? "";
-      setDisplayValue(address);
-      if (hiddenInputRef.current) hiddenInputRef.current.value = address;
-
-      onPlaceSelected?.({
-        address,
-        venueName: place.displayName ?? "",
-        lat: place.location?.lat() ?? 0,
-        lng: place.location?.lng() ?? 0,
-      });
-    });
-
-    return () => {
-      if (containerRef.current) containerRef.current.innerHTML = "";
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
     };
-  }, [scriptLoaded, onPlaceSelected]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleChange = (newValue: string) => {
+    setValue(newValue);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (newValue.trim().length < 2) {
+      setResults([]);
+      return;
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          q: newValue,
+          format: "json",
+          countrycodes: "jp",
+          addressdetails: "1",
+          namedetails: "1",
+          limit: "5",
+          "accept-language": "ja",
+        });
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?${params.toString()}`
+        );
+        const data: NominatimResult[] = await res.json();
+        setResults(data);
+        setOpen(true);
+      } catch {
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 600);
+  };
+
+  const handleSelect = (result: NominatimResult) => {
+    const address = result.display_name;
+    setValue(address);
+    setOpen(false);
+    setResults([]);
+    onPlaceSelected?.({
+      address,
+      venueName: result.namedetails?.name ?? result.name ?? "",
+      lat: parseFloat(result.lat),
+      lng: parseFloat(result.lon),
+    });
+  };
 
   return (
-    <>
-      <Script
-        src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&language=ja&loading=async`}
-        strategy="afterInteractive"
-        onLoad={() => setScriptLoaded(true)}
-      />
-      <Label className="sr-only">住所検索</Label>
-      <div ref={containerRef} className="gm-autocomplete-container" />
-      <input type="hidden" name={name} ref={hiddenInputRef} value={displayValue} readOnly />
-      {!scriptLoaded && (
-        <p className="text-xs text-muted-foreground">住所検索を読み込み中...</p>
+    <div ref={containerRef} className="relative">
+      <div className="relative">
+        <Input
+          name={name}
+          value={value}
+          onChange={(e) => handleChange(e.target.value)}
+          onFocus={() => results.length > 0 && setOpen(true)}
+          placeholder="住所や施設名を入力(例: 東京駅)"
+          autoComplete="off"
+        />
+        {loading && (
+          <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+        )}
+      </div>
+
+      {open && results.length > 0 && (
+        <div className="absolute z-50 mt-1 w-full animate-in fade-in-0 slide-in-from-top-1 rounded-md border bg-popover shadow-md duration-150">
+          {results.map((result, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => handleSelect(result)}
+              className="flex w-full items-start gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted"
+            >
+              <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              <span className="line-clamp-2">{result.display_name}</span>
+            </button>
+          ))}
+        </div>
       )}
-    </>
+
+      <p className="mt-1 text-xs text-muted-foreground">
+        住所検索: OpenStreetMap
+      </p>
+    </div>
   );
 }
