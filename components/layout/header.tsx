@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Search, Menu, Moon, Sun, Trophy, LogOut } from "lucide-react";
+import { Search, Menu, Moon, Sun, Trophy, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/providers/theme-provider";
 import { useEffect, useState } from "react";
@@ -70,6 +70,19 @@ export function Header() {
             <span className="sr-only">テーマ切り替え</span>
           </Button>
 
+          {user ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden md:inline-flex"
+              asChild
+            >
+              <Link href="/account">
+                <Settings className="h-5 w-5" />
+                <span className="sr-only">アカウント設定</span>
+              </Link>
+            </Button>
+          ) : null}
           {user ? (
             <Button
               variant="outline"

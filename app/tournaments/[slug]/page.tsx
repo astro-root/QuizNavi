@@ -1,7 +1,7 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   Calendar,
   CalendarPlus,
@@ -11,6 +11,11 @@ import {
   Wallet,
   Phone,
   ExternalLink,
+  FileText,
+  Clock,
+  ScrollText,
+  ListChecks,
+  Trophy,
 } from "lucide-react";
 import {
   REGION_LABELS,
@@ -20,12 +25,10 @@ import {
   formatDateJa,
 } from "@/lib/utils";
 
-// Googleカレンダーの日時パラメータ用に UTC の YYYYMMDDTHHMMSSZ 形式へ変換する
 function formatGCalDate(date: Date): string {
   return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 }
 
-// 予定の長さが不明なため、開始から3時間を仮の終了時刻として扱う
 const DEFAULT_EVENT_DURATION_MS = 3 * 60 * 60 * 1000;
 
 function buildGoogleCalendarUrl(tournament: {
@@ -38,7 +41,6 @@ function buildGoogleCalendarUrl(tournament: {
   city: string | null;
 }): string {
   const start = tournament.startAt;
-  // endAtが登録されていればそれを使い、未登録の場合のみ3時間後を仮の終了時刻とする
   const end =
     tournament.endAt ?? new Date(start.getTime() + DEFAULT_EVENT_DURATION_MS);
 
@@ -63,6 +65,8 @@ function buildGoogleMapsUrl(query: string): string {
     query
   )}`;
 }
+
+export const dynamic = "force-dynamic";
 
 export default async function TournamentDetailPage({
   params,
@@ -99,149 +103,158 @@ export default async function TournamentDetailPage({
     tournament.address ||
     [tournament.venueName, tournament.city].filter(Boolean).join(" ");
 
-  const mapsUrl =
-    !isOnline && mapsQuery ? buildGoogleMapsUrl(mapsQuery) : null;
-
+  const mapsUrl = !isOnline && mapsQuery ? buildGoogleMapsUrl(mapsQuery) : null;
   const calendarUrl = buildGoogleCalendarUrl(tournament);
 
+  const resourceLinks = [
+    { href: tournament.entryFormUrl, label: "参加申込フォーム", icon: ExternalLink },
+    { href: tournament.entryListUrl, label: "参加者一覧", icon: ListChecks },
+    { href: tournament.pdfUrl, label: "企画書", icon: FileText },
+    { href: tournament.timetableUrl, label: "タイムテーブル", icon: Clock },
+    { href: tournament.rulesUrl, label: "ルール", icon: ScrollText },
+    { href: tournament.officialSite, label: "公式サイト", icon: ExternalLink },
+    { href: tournament.officialX, label: "公式X", icon: ExternalLink },
+  ].filter((l): l is { href: string; label: string; icon: typeof ExternalLink } =>
+    Boolean(l.href)
+  );
+
   return (
-    <div className="container py-10 max-w-3xl">
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <h1 className="text-2xl font-bold leading-snug">{tournament.name}</h1>
-        <Badge
-          className={STATUS_BADGE_STYLE[tournament.status]}
-          variant="outline"
-        >
-          {STATUS_LABELS[tournament.status]}
-        </Badge>
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-6">
-        <Badge variant="secondary">{FORMAT_LABELS[tournament.format]}</Badge>
-        {tournament.tags.map(({ tag }) => (
-          <Badge key={tag.id} variant="outline">
-            {tag.name}
-          </Badge>
-        ))}
-      </div>
-
-      {tournament.description && (
-        <p className="text-muted-foreground whitespace-pre-wrap mb-6">
-          {tournament.description}
-        </p>
-      )}
-
-      <Separator className="my-6" />
-
-      <dl className="space-y-4 text-sm">
-        <div className="flex items-start gap-3">
-          <Calendar className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-          <div>
-            <dt className="text-muted-foreground">開催日時</dt>
-            <dd>{formatDateJa(tournament.startAt)}</dd>
-            {tournament.entryDeadline && (
-              <dd className="text-muted-foreground text-xs mt-0.5">
-                参加申込締切: {formatDateJa(tournament.entryDeadline)}
-              </dd>
-            )}
-            <dd className="mt-1.5">
-              <a
-                href={calendarUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-              >
-                <CalendarPlus className="h-3.5 w-3.5" />
-                Googleカレンダーに追加
-              </a>
-            </dd>
-          </div>
+    <div className="container max-w-3xl py-10">
+      <div className="mb-6 animate-in fade-in-0 slide-in-from-bottom-2 overflow-hidden rounded-2xl border bg-card shadow-sm duration-500">
+        <div className="flex h-40 items-center justify-center bg-muted/50 sm:h-52">
+          {tournament.logoUrl ? (
+            <Image
+              src={tournament.logoUrl}
+              alt={tournament.name}
+              width={400}
+              height={208}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <Trophy className="h-14 w-14 text-muted-foreground/30" />
+          )}
         </div>
 
-        <div className="flex items-start gap-3">
-          <MapPin className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-          <div>
-            <dt className="text-muted-foreground">開催場所</dt>
-            <dd>{locationLabel}</dd>
-            {tournament.address && (
-              <dd className="text-muted-foreground text-xs mt-0.5">
-                {tournament.address}
-              </dd>
-            )}
-            {mapsUrl && (
-              <dd className="mt-1.5">
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                >
-                  <Map className="h-3.5 w-3.5" />
-                  Googleマップで開く
-                </a>
-              </dd>
-            )}
+        <div className="p-6">
+          <div className="mb-4 flex items-start justify-between gap-4">
+            <h1 className="text-2xl font-bold leading-snug">{tournament.name}</h1>
+            <Badge className={STATUS_BADGE_STYLE[tournament.status]} variant="outline">
+              {STATUS_LABELS[tournament.status]}
+            </Badge>
           </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary">{FORMAT_LABELS[tournament.format]}</Badge>
+            {tournament.tags.map(({ tag }) => (
+              <Badge key={tag.id} variant="outline">
+                {tag.name}
+              </Badge>
+            ))}
+          </div>
+
+          {tournament.description && (
+            <p className="mt-4 whitespace-pre-wrap text-sm text-muted-foreground">
+              {tournament.description}
+            </p>
+          )}
         </div>
+      </div>
+
+      <div className="mb-6 grid animate-in fade-in-0 slide-in-from-bottom-2 grid-cols-1 gap-3 duration-500 [animation-delay:100ms] fill-mode-both sm:grid-cols-2">
+        <InfoCard icon={Calendar} label="開催日時">
+          <p>{formatDateJa(tournament.startAt)}</p>
+          {tournament.entryDeadline && (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              参加申込締切: {formatDateJa(tournament.entryDeadline)}
+            </p>
+          )}
+          <a
+            href={calendarUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1.5 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+          >
+            <CalendarPlus className="h-3.5 w-3.5" />
+            Googleカレンダーに追加
+          </a>
+        </InfoCard>
+
+        <InfoCard icon={MapPin} label="開催場所">
+          <p>{locationLabel}</p>
+          {tournament.address && (
+            <p className="mt-0.5 text-xs text-muted-foreground">{tournament.address}</p>
+          )}
+          {mapsUrl && (
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1.5 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+            >
+              <Map className="h-3.5 w-3.5" />
+              Googleマップで開く
+            </a>
+          )}
+        </InfoCard>
 
         {tournament.capacity && (
-          <div className="flex items-start gap-3">
-            <Users className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-            <div>
-              <dt className="text-muted-foreground">定員</dt>
-              <dd>{tournament.capacity}名</dd>
-            </div>
-          </div>
+          <InfoCard icon={Users} label="定員">
+            <p>{tournament.capacity}名</p>
+          </InfoCard>
         )}
 
-        <div className="flex items-start gap-3">
-          <Wallet className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-          <div>
-            <dt className="text-muted-foreground">参加費</dt>
-            <dd>{tournament.fee}</dd>
-          </div>
-        </div>
+        <InfoCard icon={Wallet} label="参加費">
+          <p>{tournament.fee}</p>
+        </InfoCard>
 
-        <div className="flex items-start gap-3">
-          <Phone className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-          <div>
-            <dt className="text-muted-foreground">問い合わせ先</dt>
-            <dd>{tournament.contact}</dd>
-          </div>
-        </div>
-      </dl>
+        <InfoCard icon={Phone} label="問い合わせ先">
+          <p>{tournament.contact}</p>
+        </InfoCard>
+      </div>
 
-      {(tournament.entryFormUrl || tournament.officialSite) && (
-        <>
-          <Separator className="my-6" />
-          <div className="flex flex-wrap gap-3">
-            {tournament.entryFormUrl ? (
+      {resourceLinks.length > 0 && (
+        <div className="mb-6 animate-in fade-in-0 slide-in-from-bottom-2 rounded-xl border bg-card p-5 shadow-sm duration-500 [animation-delay:150ms] fill-mode-both">
+          <p className="mb-3 text-sm font-semibold text-muted-foreground">関連リンク</p>
+          <div className="flex flex-wrap gap-2">
+            {resourceLinks.map(({ href, label, icon: Icon }) => (
               <a
-                href={tournament.entryFormUrl}
+                key={label}
+                href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors hover:bg-muted"
               >
-                参加申込フォーム <ExternalLink className="h-3.5 w-3.5" />
+                <Icon className="h-3.5 w-3.5" />
+                {label}
               </a>
-            ) : null}
-            {tournament.officialSite ? (
-              <a
-                href={tournament.officialSite}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-              >
-                公式サイト <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            ) : null}
+            ))}
           </div>
-        </>
+        </div>
       )}
 
-      <p className="text-xs text-muted-foreground mt-10">
+      <p className="animate-in fade-in-0 text-xs text-muted-foreground duration-500 [animation-delay:200ms] fill-mode-both">
         主催: {tournament.organizer.name}
       </p>
+    </div>
+  );
+}
+
+function InfoCard({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: typeof Calendar;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border bg-card p-4 shadow-sm">
+      <div className="mb-1.5 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+        <Icon className="h-4 w-4" />
+        {label}
+      </div>
+      <div className="text-sm">{children}</div>
     </div>
   );
 }
