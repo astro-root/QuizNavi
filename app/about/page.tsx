@@ -1,5 +1,10 @@
 import { SITE_NAME } from "@/lib/utils";
 
+export const metadata = {
+  title: "このサイトについて",
+  description: "QuizNaviは全国のクイズ大会情報をまとめて検索できる情報サイトです。",
+};
+
 export default function AboutPage() {
   return (
     <div className="container max-w-2xl py-12">

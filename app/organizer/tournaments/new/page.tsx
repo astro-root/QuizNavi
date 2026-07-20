@@ -47,6 +47,7 @@ const REGION_PREFECTURES: Record<string, string[]> = {
   ONLINE_ONLY: [],
 };
 import { FileUploadField } from "@/components/organizer/file-upload-field";
+import { AddressAutocomplete } from "@/components/organizer/address-autocomplete";
 
 const initialState: CreateTournamentState = {};
 
@@ -86,6 +87,7 @@ export default function NewTournamentPage() {
     setPrefecture("");
   };
   const [eligibilityLevel, setEligibilityLevel] = useState("ANYONE");
+  const [venueName, setVenueName] = useState("");
 
   return (
     <div className="container max-w-2xl py-12">
@@ -183,17 +185,25 @@ export default function NewTournamentPage() {
             </Select>
           </Field>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="市区町村" error={state.fieldErrors?.city}>
-              <Input name="city" />
-            </Field>
-            <Field label="会場名" error={state.fieldErrors?.venueName}>
-              <Input name="venueName" />
-            </Field>
-          </div>
+          <Field label="市区町村" error={state.fieldErrors?.city}>
+            <Input name="city" />
+          </Field>
+
+          <Field label="会場名" error={state.fieldErrors?.venueName}>
+            <Input
+              name="venueName"
+              value={venueName}
+              onChange={(e) => setVenueName(e.target.value)}
+            />
+          </Field>
 
           <Field label="住所" error={state.fieldErrors?.address}>
-            <Input name="address" />
+            <AddressAutocomplete
+              name="address"
+              onPlaceSelected={(details) => {
+                if (details.venueName) setVenueName(details.venueName);
+              }}
+            />
           </Field>
         </Section>
 

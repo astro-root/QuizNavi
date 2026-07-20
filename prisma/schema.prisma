@@ -184,6 +184,8 @@ model Tournament {
   entryListUrl   String?
   others         String?
 
+  resultText     String?
+
   status         TournamentStatus  @default(BEFORE_OPEN)
   publishStatus  PublishStatus     @default(DRAFT)
 

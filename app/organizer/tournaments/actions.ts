@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { tournamentSchema } from "@/lib/validations/tournament";
@@ -275,4 +276,31 @@ export async function updateTournament(
   });
 
   redirect(`/organizer/tournaments/${tournamentId}?updated=1`);
+}
+
+export type ResultState = {
+  error?: string;
+  success?: boolean;
+};
+
+export async function updateTournamentResult(
+  tournamentId: string,
+  _prevState: ResultState,
+  formData: FormData
+): Promise<ResultState> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  await assertOwnership(tournamentId, user.id);
+
+  const resultText = formData.get("resultText")?.toString().trim() || null;
+
+  await prisma.tournament.update({
+    where: { id: tournamentId },
+    data: { resultText },
+  });
+
+  revalidatePath(`/tournaments`);
+  revalidatePath(`/organizer/tournaments/${tournamentId}`);
+  return { success: true };
 }

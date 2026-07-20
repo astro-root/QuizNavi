@@ -12,20 +12,28 @@ const notoSansJp = Noto_Sans_JP({
   variable: "--font-noto-sans-jp",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
-  ),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "QuizNavi | 全国のクイズ大会を検索",
     template: "%s | QuizNavi",
   },
   description:
-    "中学生・高校生向けクイズ大会の情報を全国から検索できるサービス「QuizNavi」。開催日、地域、参加資格などで絞り込みできます。",
+    "全国のクイズ大会の情報を検索できるサービス「QuizNavi」。開催日、地域、参加資格、開催形式などで絞り込みできます。",
   openGraph: {
     type: "website",
     locale: "ja_JP",
     siteName: "QuizNavi",
+    url: siteUrl,
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 

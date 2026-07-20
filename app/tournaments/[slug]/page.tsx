@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -68,6 +69,35 @@ function buildGoogleMapsUrl(query: string): string {
 }
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
+
+  const tournament = await prisma.tournament.findUnique({ where: { slug } });
+
+  if (!tournament || tournament.publishStatus !== "PUBLISHED") {
+    return { title: "大会が見つかりません" };
+  }
+
+  const description =
+    tournament.description?.slice(0, 120) ??
+    `${formatDateJa(tournament.startAt)}開催。${tournament.eligibility}`;
+
+  return {
+    title: tournament.name,
+    description,
+    openGraph: {
+      title: tournament.name,
+      description,
+      images: tournament.logoUrl ? [tournament.logoUrl] : undefined,
+    },
+  };
+}
 
 export default async function TournamentDetailPage({
   params,
@@ -225,6 +255,13 @@ export default async function TournamentDetailPage({
           <p>{tournament.contact}</p>
         </InfoCard>
       </div>
+
+      {tournament.status === "FINISHED" && tournament.resultText && (
+        <div className="mb-6 animate-in fade-in-0 slide-in-from-bottom-2 rounded-xl border bg-card p-5 shadow-sm duration-500 [animation-delay:120ms] fill-mode-both">
+          <p className="mb-2 text-sm font-semibold text-muted-foreground">大会結果</p>
+          <p className="whitespace-pre-wrap text-sm">{tournament.resultText}</p>
+        </div>
+      )}
 
       {resourceLinks.length > 0 && (
         <div className="mb-6 animate-in fade-in-0 slide-in-from-bottom-2 rounded-xl border bg-card p-5 shadow-sm duration-500 [animation-delay:150ms] fill-mode-both">

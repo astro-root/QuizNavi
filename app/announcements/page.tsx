@@ -2,6 +2,11 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "お知らせ",
+  description: "QuizNaviからのお知らせ一覧です。",
+};
+
 export default async function AnnouncementsPage() {
   const announcements = await prisma.announcement.findMany({
     where: { isPublished: true },

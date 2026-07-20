@@ -2,6 +2,13 @@ import { prisma } from "@/lib/prisma";
 import { TournamentCard } from "@/components/tournaments/tournament-card";
 import { TournamentFilters } from "./tournament-filters";
 import type { Prisma, Region, TournamentFormat, TournamentStatus } from "@prisma/client";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "大会を探す",
+  description:
+    "全国のクイズ大会を地域・開催形式・タグから検索できます。締切が近い大会もすぐに見つかります。",
+};
 
 type SearchParams = {
   q?: string;

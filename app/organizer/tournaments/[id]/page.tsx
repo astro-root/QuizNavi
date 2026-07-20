@@ -9,6 +9,7 @@ import {
   formatDateJa,
 } from "@/lib/utils";
 import { PublishControls } from "./publish-controls";
+import { ResultForm } from "./result-form";
 import { Trophy } from "lucide-react";
 
 const PUBLISH_STATUS_LABEL: Record<string, string> = {
@@ -111,6 +112,15 @@ export default async function OrganizerTournamentDetailPage({
           </dl>
         </div>
       </div>
+
+      {tournament.status === "FINISHED" && (
+        <div className="mb-4">
+          <ResultForm
+            tournamentId={tournament.id}
+            initialText={tournament.resultText ?? ""}
+          />
+        </div>
+      )}
 
       <PublishControls
         tournamentId={tournament.id}
