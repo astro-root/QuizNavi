@@ -7,20 +7,38 @@ import {
   deleteTournament,
 } from "../actions";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Trash2, ExternalLink, Pencil } from "lucide-react";
+import Link from "next/link";
 
 export function PublishControls({
   tournamentId,
   publishStatus,
+  slug,
 }: {
   tournamentId: string;
   publishStatus: string;
+  slug: string;
 }) {
   const [pending, startTransition] = useTransition();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   return (
     <div className="space-y-4">
+      <div className="flex gap-2">
+        <Button variant="outline" asChild className="flex-1">
+          <Link href={`/tournaments/${slug}`} target="_blank">
+            <ExternalLink className="mr-2 h-4 w-4" />
+            大会ページを見る
+          </Link>
+        </Button>
+        <Button variant="outline" asChild className="flex-1">
+          <Link href={`/organizer/tournaments/${tournamentId}/edit`}>
+            <Pencil className="mr-2 h-4 w-4" />
+            編集する
+          </Link>
+        </Button>
+      </div>
+
       <div className="rounded-xl border bg-card p-5 shadow-sm">
         {publishStatus === "PUBLISHED" ? (
           <div>

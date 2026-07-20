@@ -115,6 +115,7 @@ export default async function OrganizerTournamentDetailPage({
       <PublishControls
         tournamentId={tournament.id}
         publishStatus={tournament.publishStatus}
+        slug={tournament.slug}
       />
     </div>
   );

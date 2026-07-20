@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -83,8 +84,15 @@ export default async function TournamentDetailPage({
     },
   });
 
-  if (!tournament || tournament.publishStatus !== "PUBLISHED") {
+  if (!tournament) {
     notFound();
+  }
+
+  if (tournament.publishStatus !== "PUBLISHED") {
+    const user = await getCurrentUser();
+    if (!user || user.id !== tournament.organizerId) {
+      notFound();
+    }
   }
 
   const isOnline = tournament.format === "ONLINE";
@@ -120,6 +128,11 @@ export default async function TournamentDetailPage({
 
   return (
     <div className="container max-w-3xl py-10">
+      {tournament.publishStatus !== "PUBLISHED" && (
+        <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
+          これは非公開のプレビューです。あなた以外には表示されません。
+        </div>
+      )}
       <div className="mb-6 animate-in fade-in-0 slide-in-from-bottom-2 overflow-hidden rounded-2xl border bg-card shadow-sm duration-500">
         <div className="flex h-40 items-center justify-center bg-muted/50 sm:h-52">
           {tournament.logoUrl ? (
