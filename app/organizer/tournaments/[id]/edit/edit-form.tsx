@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FileUploadField } from "@/components/organizer/file-upload-field";
+import { AddressAutocomplete } from "@/components/organizer/address-autocomplete";
 import { Loader2 } from "lucide-react";
 import { PREFECTURE_LABELS } from "@/lib/utils";
 import type { Tournament } from "@prisma/client";
@@ -91,6 +92,7 @@ export function EditTournamentForm({ tournament }: { tournament: Tournament }) {
   const [eligibilityLevel, setEligibilityLevel] = useState<string>(
     tournament.eligibilityLevel
   );
+  const [venueName, setVenueName] = useState(tournament.venueName ?? "");
 
   const availablePrefectures = region ? REGION_PREFECTURES[region] ?? [] : [];
 
@@ -205,17 +207,26 @@ export function EditTournamentForm({ tournament }: { tournament: Tournament }) {
             </Select>
           </Field>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="市区町村" error={state.fieldErrors?.city}>
-              <Input name="city" defaultValue={tournament.city ?? ""} />
-            </Field>
-            <Field label="会場名" error={state.fieldErrors?.venueName}>
-              <Input name="venueName" defaultValue={tournament.venueName ?? ""} />
-            </Field>
-          </div>
+          <Field label="市区町村" error={state.fieldErrors?.city}>
+            <Input name="city" defaultValue={tournament.city ?? ""} />
+          </Field>
+
+          <Field label="会場名" error={state.fieldErrors?.venueName}>
+            <Input
+              name="venueName"
+              value={venueName}
+              onChange={(e) => setVenueName(e.target.value)}
+            />
+          </Field>
 
           <Field label="住所" error={state.fieldErrors?.address}>
-            <Input name="address" defaultValue={tournament.address ?? ""} />
+            <AddressAutocomplete
+              name="address"
+              defaultValue={tournament.address ?? ""}
+              onPlaceSelected={(details) => {
+                if (details.venueName) setVenueName(details.venueName);
+              }}
+            />
           </Field>
         </Section>
 
