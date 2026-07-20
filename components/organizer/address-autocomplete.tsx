@@ -24,7 +24,6 @@ declare global {
 export function AddressAutocomplete({ name, defaultValue, onPlaceSelected }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
-  const [value, setValue] = useState(defaultValue ?? "");
 
   useEffect(() => {
     if (!scriptLoaded || !inputRef.current || !window.google) return;
@@ -37,7 +36,9 @@ export function AddressAutocomplete({ name, defaultValue, onPlaceSelected }: Pro
     const listener = autocomplete.addListener("place_changed", () => {
       const place = autocomplete.getPlace();
       const address = place.formatted_address ?? "";
-      setValue(address);
+      if (inputRef.current) {
+        inputRef.current.value = address;
+      }
       onPlaceSelected?.({
         address,
         venueName: place.name ?? "",
@@ -61,8 +62,7 @@ export function AddressAutocomplete({ name, defaultValue, onPlaceSelected }: Pro
       <Input
         ref={inputRef}
         name={name}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
+        defaultValue={defaultValue}
         placeholder="住所や会場名を入力すると候補が表示されます"
         autoComplete="off"
       />
