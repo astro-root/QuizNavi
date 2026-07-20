@@ -74,8 +74,8 @@ export default async function TournamentDetailPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
-  console.log("DEBUG slug:", JSON.stringify(slug));
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
 
   const tournament = await prisma.tournament.findUnique({
     where: { slug },
