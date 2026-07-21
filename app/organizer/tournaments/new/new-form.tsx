@@ -64,14 +64,6 @@ const REGIONS = [
   ["ONLINE_ONLY", "オンライン限定"],
 ];
 
-const ELIGIBILITY_LEVELS = [
-  ["ANYONE", "誰でも参加可能"],
-  ["MIDDLE_SCHOOL", "中学生"],
-  ["HIGH_SCHOOL", "高校生"],
-  ["MIDDLE_AND_HIGH", "中高生"],
-  ["BEGINNER_WELCOME", "初心者歓迎"],
-];
-
 type Tag = { id: string; name: string; category: string };
 
 export function NewTournamentForm({ tags }: { tags: Tag[] }) {
@@ -101,7 +93,6 @@ export function NewTournamentForm({ tags }: { tags: Tag[] }) {
     (acc[tag.category] ??= []).push(tag);
     return acc;
   }, {});
-  const [eligibilityLevel, setEligibilityLevel] = useState("ANYONE");
   const [venueName, setVenueName] = useState("");
 
   return (
@@ -233,24 +224,11 @@ export function NewTournamentForm({ tags }: { tags: Tag[] }) {
           <Field label="参加資格" error={state.fieldErrors?.eligibility} required>
             <Input name="eligibility" required />
           </Field>
-
           <Field label="対象レベル" error={state.fieldErrors?.eligibilityLevel}>
-            <Select
+            <Input
               name="eligibilityLevel"
-              value={eligibilityLevel}
-              onValueChange={setEligibilityLevel}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ELIGIBILITY_LEVELS.map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder="例: 高校生以下、初心者歓迎、経験者向け など"
+            />
           </Field>
 
           <Field label="参加費" error={state.fieldErrors?.fee} required>
