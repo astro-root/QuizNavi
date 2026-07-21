@@ -38,6 +38,13 @@ export default async function AdminHomePage() {
           <p className="text-sm text-muted-foreground">公開中の大会</p>
           <p className="text-3xl font-bold">{publishedCount}</p>
         </Link>
+        <Link
+          href="/admin/announcements"
+          className="rounded-lg border p-6 transition-colors hover:bg-muted/50"
+        >
+          <p className="text-sm text-muted-foreground">お知らせ管理</p>
+          <p className="text-3xl font-bold">→</p>
+        </Link>
       </div>
     </div>
   );
