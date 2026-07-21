@@ -224,10 +224,9 @@ export async function updateTournament(
     entryListUrl: formData.get("entryListUrl")?.toString() ?? "",
     others: formData.get("others")?.toString() || undefined,
     tagIds: formData.getAll("tagIds").map((v) => v.toString()),
+    newTagNames: formData.getAll("newTagNames").map((v) => v.toString()),
   };
-
   const parsed = tournamentDraftSchema.safeParse(raw);
-
   if (!parsed.success) {
     const fieldErrors: Record<string, string> = {};
     for (const issue of parsed.error.issues) {
@@ -236,10 +235,23 @@ export async function updateTournament(
     }
     return { error: "入力内容を確認してください", fieldErrors };
   }
-
   const data = parsed.data;
-
   const sanitizedUrls: Record<string, string | null> = {};
+  for (const field of URL_FIELDS) {
+    const value = data[field];
+    sanitizedUrls[field] = value ? sanitizeUrl(value) : null;
+  }
+
+  const createdTagIds: string[] = [];
+  for (const name of data.newTagNames) {
+    const tag = await prisma.tag.upsert({
+      where: { name },
+      update: {},
+      create: { name, category: "OTHER" },
+    });
+    createdTagIds.push(tag.id);
+  }
+  const allTagIds = [...new Set([...data.tagIds, ...createdTagIds])];
   for (const field of URL_FIELDS) {
     const value = data[field];
     sanitizedUrls[field] = value ? sanitizeUrl(value) : null;
@@ -276,8 +288,8 @@ export async function updateTournament(
       entryListUrl: sanitizedUrls.entryListUrl,
       others: data.others,
       tags: {
+        create: allTagIds.map((tagId) => ({ tagId })),
         deleteMany: {},
-        create: data.tagIds.map((tagId: string) => ({ tagId })),
       },
     },
   });
