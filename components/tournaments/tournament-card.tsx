@@ -16,8 +16,8 @@ type TournamentCardProps = {
     id: string;
     slug: string;
     name: string;
-    startAt: Date;
-    format: string;
+    startAt: Date | null;
+    format: string | null;
     region: string | null;
     prefecture: string | null;
     city: string | null;
@@ -67,7 +67,7 @@ export function TournamentCard({ tournament }: TournamentCardProps) {
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 shrink-0" />
-            <span>{formatDateJa(tournament.startAt)}</span>
+            <span>{tournament.startAt ? formatDateJa(tournament.startAt) : "日程未定"}</span>
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 shrink-0" />
@@ -80,9 +80,11 @@ export function TournamentCard({ tournament }: TournamentCardProps) {
             </div>
           )}
           <div className="pt-1">
-            <Badge variant="secondary" className="text-xs">
-              {FORMAT_LABELS[tournament.format]}
-            </Badge>
+            {tournament.format && (
+              <Badge variant="secondary" className="text-xs">
+                {FORMAT_LABELS[tournament.format]}
+              </Badge>
+            )}
           </div>
         </CardContent>
       </Card>

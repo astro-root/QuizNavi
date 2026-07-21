@@ -87,7 +87,7 @@ export function EditTournamentForm({
   const updateWithId = updateTournament.bind(null, tournament.id);
   const [state, formAction, pending] = useActionState(updateWithId, initialState);
 
-  const [format, setFormat] = useState<string>(tournament.format);
+  const [format, setFormat] = useState<string>(tournament.format ?? "");
   const [region, setRegion] = useState(tournament.region ?? "");
   const [prefecture, setPrefecture] = useState(tournament.prefecture ?? "");
   const [venueName, setVenueName] = useState(tournament.venueName ?? "");
@@ -256,7 +256,7 @@ export function EditTournamentForm({
           </Field>
 
           <Field label="参加資格" error={state.fieldErrors?.eligibility} required>
-            <Input name="eligibility" defaultValue={tournament.eligibility} required />
+            <Input name="eligibility" defaultValue={tournament.eligibility ?? ""} />
           </Field>
           <Field label="対象レベル" error={state.fieldErrors?.eligibilityLevel}>
             <Input
@@ -267,7 +267,7 @@ export function EditTournamentForm({
           </Field>
 
           <Field label="参加費" error={state.fieldErrors?.fee} required>
-            <Input name="fee" defaultValue={tournament.fee} required />
+            <Input name="fee" defaultValue={tournament.fee ?? ""} />
           </Field>
 
           <Field label="持ち物" error={state.fieldErrors?.belongings}>
@@ -275,7 +275,7 @@ export function EditTournamentForm({
           </Field>
 
           <Field label="問い合わせ先" error={state.fieldErrors?.contact} required>
-            <Input name="contact" defaultValue={tournament.contact} required />
+            <Input name="contact" defaultValue={tournament.contact ?? ""} />
           </Field>
         </Section>
 

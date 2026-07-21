@@ -47,7 +47,7 @@ export default async function AdminTournamentsPage() {
                   <td className="p-3 text-muted-foreground">
                     {t.organizer.name} ({t.organizer.email})
                   </td>
-                  <td className="p-3">{t.startAt.toLocaleDateString("ja-JP")}</td>
+                  <td className="p-3">{t.startAt ? t.startAt.toLocaleDateString("ja-JP") : "未定"}</td>
                   <td className="p-3">
                     <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
                       {STATUS_LABEL[t.publishStatus] ?? t.publishStatus}

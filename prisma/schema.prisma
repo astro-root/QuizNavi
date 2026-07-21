@@ -155,11 +155,11 @@ model Tournament {
 
   description    String?
 
-  startAt        DateTime
+  startAt        DateTime?
   endAt          DateTime?
   entryDeadline  DateTime?
 
-  format         TournamentFormat
+  format         TournamentFormat?
 
   region         Region?
   prefecture     Prefecture?
@@ -168,11 +168,11 @@ model Tournament {
   address        String?
 
   capacity       Int?
-  eligibility    String
+  eligibility    String?
   eligibilityLevel String?
-  fee            String
+  fee            String?
   belongings     String?
-  contact        String
+  contact        String?
 
   logoUrl        String?
   timetableUrl   String?

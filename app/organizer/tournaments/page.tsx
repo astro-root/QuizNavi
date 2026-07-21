@@ -49,7 +49,7 @@ export default async function OrganizerTournamentsPage() {
               <div>
                 <p className="font-medium">{t.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {t.startAt.toLocaleDateString("ja-JP")}
+                  {t.startAt ? t.startAt.toLocaleDateString("ja-JP") : "未定"}
                 </p>
               </div>
               <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium">

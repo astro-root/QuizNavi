@@ -43,7 +43,7 @@ function buildGoogleCalendarUrl(tournament: {
   venueName: string | null;
   city: string | null;
 }): string {
-  const start = tournament.startAt;
+  const start = tournament.startAt!;
   const end =
     tournament.endAt ?? new Date(start.getTime() + DEFAULT_EVENT_DURATION_MS);
 
@@ -87,7 +87,7 @@ export async function generateMetadata({
 
   const description =
     tournament.description?.slice(0, 120) ??
-    `${formatDateJa(tournament.startAt)}開催。${tournament.eligibility}`;
+    `${formatDateJa(tournament.startAt!)}開催。${tournament.eligibility}`;
 
   return {
     title: tournament.name,
@@ -139,6 +139,7 @@ export default async function TournamentDetailPage({
   }
 
   const isOnline = tournament.format === "ONLINE";
+  // 公開済みの大会は publishRequirementsSchema により必須項目が保証されている
 
   const locationLabel = isOnline
     ? "オンライン開催"
@@ -155,7 +156,7 @@ export default async function TournamentDetailPage({
     [tournament.venueName, tournament.city].filter(Boolean).join(" ");
 
   const mapsUrl = !isOnline && mapsQuery ? buildGoogleMapsUrl(mapsQuery) : null;
-  const calendarUrl = buildGoogleCalendarUrl(tournament);
+  const calendarUrl = buildGoogleCalendarUrl({ ...tournament, startAt: tournament.startAt! });
 
   const resourceLinks = [
     { href: tournament.entryFormUrl, label: "参加申込フォーム", icon: ExternalLink },
@@ -200,7 +201,7 @@ export default async function TournamentDetailPage({
           </div>
 
           <div className="mb-3 flex flex-wrap items-center gap-2">
-            <Badge variant="secondary">{FORMAT_LABELS[tournament.format]}</Badge>
+            <Badge variant="secondary">{FORMAT_LABELS[tournament.format!]}</Badge>
             {tournament.tags.map(({ tag }) => (
               <Badge key={tag.id} variant="outline">
                 {tag.name}
@@ -224,7 +225,7 @@ export default async function TournamentDetailPage({
 
       <div className="mb-6 grid animate-in fade-in-0 slide-in-from-bottom-2 grid-cols-1 gap-3 duration-500 [animation-delay:100ms] fill-mode-both sm:grid-cols-2">
         <InfoCard icon={Calendar} label="開催日時">
-          <p>{formatDateJa(tournament.startAt)}</p>
+          <p>{formatDateJa(tournament.startAt!)}</p>
           {tournament.entryDeadline && (
             <p className="mt-0.5 text-xs text-muted-foreground">
               参加申込締切: {formatDateJa(tournament.entryDeadline)}

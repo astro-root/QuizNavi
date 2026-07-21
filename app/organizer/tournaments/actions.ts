@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { tournamentSchema } from "@/lib/validations/tournament";
+import { tournamentDraftSchema, publishRequirementsSchema } from "@/lib/validations/tournament";
 import { sanitizeUrl } from "@/lib/security/sanitize";
 
 function slugify(name: string) {
@@ -74,7 +74,7 @@ export async function createTournamentDraft(
     tagIds: formData.getAll("tagIds").map((v) => v.toString()),
   };
 
-  const parsed = tournamentSchema.safeParse(raw);
+  const parsed = tournamentDraftSchema.safeParse(raw);
 
   if (!parsed.success) {
     const fieldErrors: Record<string, string> = {};
@@ -126,7 +126,7 @@ export async function createTournamentDraft(
       others: data.others,
       publishStatus: "DRAFT",
       tags: {
-        create: data.tagIds.map((tagId) => ({ tagId })),
+        create: data.tagIds.map((tagId: string) => ({ tagId })),
       },
     },
   });
@@ -226,7 +226,7 @@ export async function updateTournament(
     tagIds: formData.getAll("tagIds").map((v) => v.toString()),
   };
 
-  const parsed = tournamentSchema.safeParse(raw);
+  const parsed = tournamentDraftSchema.safeParse(raw);
 
   if (!parsed.success) {
     const fieldErrors: Record<string, string> = {};
@@ -277,7 +277,7 @@ export async function updateTournament(
       others: data.others,
       tags: {
         deleteMany: {},
-        create: data.tagIds.map((tagId) => ({ tagId })),
+        create: data.tagIds.map((tagId: string) => ({ tagId })),
       },
     },
   });

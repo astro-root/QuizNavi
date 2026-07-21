@@ -75,7 +75,9 @@ export default async function OrganizerTournamentDetailPage({
           </div>
 
           <div className="mb-4 flex flex-wrap gap-2">
-            <Badge variant="secondary">{FORMAT_LABELS[tournament.format]}</Badge>
+            {tournament.format && (
+              <Badge variant="secondary">{FORMAT_LABELS[tournament.format]}</Badge>
+            )}
             {tournament.tags.map(({ tag }) => (
               <Badge key={tag.id} variant="outline">
                 {tag.name}
@@ -86,7 +88,7 @@ export default async function OrganizerTournamentDetailPage({
           <dl className="space-y-2 text-sm text-muted-foreground">
             <div>
               <dt className="inline font-medium text-foreground">開催日時: </dt>
-              <dd className="inline">{formatDateJa(tournament.startAt)}</dd>
+              <dd className="inline">{tournament.startAt ? formatDateJa(tournament.startAt) : "未定"}</dd>
             </div>
             <div>
               <dt className="inline font-medium text-foreground">開催地: </dt>
@@ -103,11 +105,11 @@ export default async function OrganizerTournamentDetailPage({
             </div>
             <div>
               <dt className="inline font-medium text-foreground">参加費: </dt>
-              <dd className="inline">{tournament.fee}</dd>
+              <dd className="inline">{tournament.fee || "未設定"}</dd>
             </div>
             <div>
               <dt className="inline font-medium text-foreground">問い合わせ先: </dt>
-              <dd className="inline">{tournament.contact}</dd>
+              <dd className="inline">{tournament.contact || "未設定"}</dd>
             </div>
           </dl>
         </div>
