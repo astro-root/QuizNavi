@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
         "localhost:3000",
         "*.app.github.dev",
         "quiznavi.vercel.app",
+        "quiznavi.astro-root.com",
       ],
     },
   },
