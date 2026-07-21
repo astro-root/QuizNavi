@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FileUploadField } from "@/components/organizer/file-upload-field";
-import { LogOut, Trash2, Check } from "lucide-react";
+import { LogOut, Trash2, Check, LayoutList } from "lucide-react";
+import Link from "next/link";
 
 const initialState: AccountState = {};
 
@@ -69,6 +70,15 @@ export function AccountForm({ user }: Props) {
             {pending ? "保存中..." : "保存する"}
           </Button>
         </form>
+      </div>
+
+      <div className="rounded-xl border p-6">
+        <Button variant="outline" className="w-full" asChild>
+          <Link href="/organizer/tournaments">
+            <LayoutList className="mr-2 h-4 w-4" />
+            主催した大会を管理する
+          </Link>
+        </Button>
       </div>
 
       <div className="rounded-xl border p-6">

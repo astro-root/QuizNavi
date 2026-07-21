@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
+import { FavoriteButton } from "@/components/tournaments/favorite-button";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
@@ -119,11 +120,22 @@ export default async function TournamentDetailPage({
     notFound();
   }
 
+  const currentUser = await getCurrentUser();
+
   if (tournament.publishStatus !== "PUBLISHED") {
-    const user = await getCurrentUser();
-    if (!user || user.id !== tournament.organizerId) {
+    if (!currentUser || currentUser.id !== tournament.organizerId) {
       notFound();
     }
+  }
+
+  let isFavorited = false;
+  if (currentUser) {
+    const favorite = await prisma.favorite.findUnique({
+      where: {
+        userId_tournamentId: { userId: currentUser.id, tournamentId: tournament.id },
+      },
+    });
+    isFavorited = Boolean(favorite);
   }
 
   const isOnline = tournament.format === "ONLINE";
@@ -187,7 +199,7 @@ export default async function TournamentDetailPage({
             </Badge>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="mb-3 flex flex-wrap items-center gap-2">
             <Badge variant="secondary">{FORMAT_LABELS[tournament.format]}</Badge>
             {tournament.tags.map(({ tag }) => (
               <Badge key={tag.id} variant="outline">
@@ -195,6 +207,12 @@ export default async function TournamentDetailPage({
               </Badge>
             ))}
           </div>
+
+          <FavoriteButton
+            tournamentId={tournament.id}
+            slug={tournament.slug}
+            initialFavorited={isFavorited}
+          />
 
           {tournament.description && (
             <p className="mt-4 whitespace-pre-wrap text-sm text-muted-foreground">

@@ -123,7 +123,7 @@ export function EditTournamentForm({ tournament }: { tournament: Tournament }) {
             />
           </Field>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="開催日時" error={state.fieldErrors?.startAt} required>
               <Input
                 type="datetime-local"

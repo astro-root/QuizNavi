@@ -87,7 +87,7 @@ export function TournamentFilters({ tags }: { tags: Tag[] }) {
           value={searchParams.get("region") ?? "ALL"}
           onValueChange={(v) => updateParams({ region: v === "ALL" ? null : v })}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="地域" />
           </SelectTrigger>
           <SelectContent>
@@ -104,7 +104,7 @@ export function TournamentFilters({ tags }: { tags: Tag[] }) {
           value={searchParams.get("format") ?? "ALL"}
           onValueChange={(v) => updateParams({ format: v === "ALL" ? null : v })}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="開催形式" />
           </SelectTrigger>
           <SelectContent>
