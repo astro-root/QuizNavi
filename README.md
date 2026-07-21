@@ -2,7 +2,7 @@
 
 全国のクイズ大会情報を検索できるWebサービスです。中学生・高校生に限らず、誰でも大会の検索・登録ができます。
 
-本番環境: https://quiznavi.vercel.app
+本番環境: https://quiznavi.astro-root.com
 
 ## 主な機能
 
