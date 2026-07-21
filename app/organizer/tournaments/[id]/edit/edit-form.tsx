@@ -137,14 +137,12 @@ export function EditTournamentForm({
               defaultValue={tournament.description ?? ""}
             />
           </Field>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="開催日時" error={state.fieldErrors?.startAt} required>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Field label="開催日時" error={state.fieldErrors?.startAt}>
               <Input
                 type="datetime-local"
                 name="startAt"
                 defaultValue={toLocalInputValue(tournament.startAt)}
-                required
               />
             </Field>
             <Field label="終了日時" error={state.fieldErrors?.endAt}>
@@ -154,15 +152,14 @@ export function EditTournamentForm({
                 defaultValue={toLocalInputValue(tournament.endAt)}
               />
             </Field>
+            <Field label="参加締切" error={state.fieldErrors?.entryDeadline}>
+              <Input
+                type="datetime-local"
+                name="entryDeadline"
+                defaultValue={toLocalInputValue(tournament.entryDeadline)}
+              />
+            </Field>
           </div>
-
-          <Field label="参加締切" error={state.fieldErrors?.entryDeadline}>
-            <Input
-              type="datetime-local"
-              name="entryDeadline"
-              defaultValue={toLocalInputValue(tournament.entryDeadline)}
-            />
-          </Field>
 
           <Field label="開催形式" error={state.fieldErrors?.format} required>
             <Select name="format" value={format} onValueChange={setFormat}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect, useRef } from "react";
 import { createTournamentDraft, type CreateTournamentState } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
-import { PREFECTURE_LABELS, TAG_CATEGORY_LABELS } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { PREFECTURE_LABELS } from "@/lib/utils";
+import { FileUploadField } from "@/components/organizer/file-upload-field";
+import { AddressAutocomplete } from "@/components/organizer/address-autocomplete";
+import { TagPicker } from "@/components/organizer/tag-picker";
 
 const REGION_PREFECTURES: Record<string, string[]> = {
   HOKKAIDO: ["HOKKAIDO"],
@@ -47,8 +49,6 @@ const REGION_PREFECTURES: Record<string, string[]> = {
   ],
   ONLINE_ONLY: [],
 };
-import { FileUploadField } from "@/components/organizer/file-upload-field";
-import { AddressAutocomplete } from "@/components/organizer/address-autocomplete";
 
 const initialState: CreateTournamentState = {};
 
@@ -75,32 +75,34 @@ export function NewTournamentForm({ tags }: { tags: Tag[] }) {
   const [region, setRegion] = useState("");
   const [prefecture, setPrefecture] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [newTagNames, setNewTagNames] = useState<string[]>([]);
+  const [venueName, setVenueName] = useState("");
+  const [dirty, setDirty] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const availablePrefectures = region ? REGION_PREFECTURES[region] ?? [] : [];
 
   const handleRegionChange = (value: string) => {
     setRegion(value);
     setPrefecture("");
+    setDirty(true);
   };
 
-  const toggleTag = (tagId: string) => {
-    setSelectedTagIds((prev) =>
-      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
-    );
-  };
-
-  const tagsByCategory = tags.reduce<Record<string, Tag[]>>((acc, tag) => {
-    (acc[tag.category] ??= []).push(tag);
-    return acc;
-  }, {});
-  const [venueName, setVenueName] = useState("");
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!dirty) return;
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [dirty]);
 
   return (
     <div className="container max-w-2xl py-12">
       <div className="mb-8">
         <h1 className="text-2xl font-bold">大会を登録する</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          入力内容は下書きとして保存されます。公開前にいつでも編集できます。
+          必須項目は「大会名」のみです。他の項目は後からいつでも編集できます。公開する際に必要な項目が揃っているかを確認します。
         </p>
       </div>
 
@@ -110,10 +112,20 @@ export function NewTournamentForm({ tags }: { tags: Tag[] }) {
         </p>
       )}
 
-      <form action={formAction} className="space-y-8">
+      <form
+        ref={formRef}
+        action={formAction}
+        onChange={() => setDirty(true)}
+        onSubmit={() => setDirty(false)}
+        className="space-y-8"
+      >
         {selectedTagIds.map((id) => (
           <input key={id} type="hidden" name="tagIds" value={id} />
         ))}
+        {newTagNames.map((name) => (
+          <input key={name} type="hidden" name="newTagNames" value={name} />
+        ))}
+
         <Section title="基本情報">
           <Field label="大会名" error={state.fieldErrors?.name} required>
             <Input name="name" required />
@@ -123,21 +135,27 @@ export function NewTournamentForm({ tags }: { tags: Tag[] }) {
             <Textarea name="description" rows={4} />
           </Field>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="開催日時" error={state.fieldErrors?.startAt} required>
-              <Input type="datetime-local" name="startAt" required />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Field label="開催日時" error={state.fieldErrors?.startAt}>
+              <Input type="datetime-local" name="startAt" />
             </Field>
             <Field label="終了日時" error={state.fieldErrors?.endAt}>
               <Input type="datetime-local" name="endAt" />
             </Field>
+            <Field label="参加締切" error={state.fieldErrors?.entryDeadline}>
+              <Input type="datetime-local" name="entryDeadline" />
+            </Field>
           </div>
 
-          <Field label="参加締切" error={state.fieldErrors?.entryDeadline}>
-            <Input type="datetime-local" name="entryDeadline" />
-          </Field>
-
-          <Field label="開催形式" error={state.fieldErrors?.format} required>
-            <Select name="format" value={format} onValueChange={setFormat}>
+          <Field label="開催形式" error={state.fieldErrors?.format}>
+            <Select
+              name="format"
+              value={format}
+              onValueChange={(v) => {
+                setFormat(v);
+                setDirty(true);
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="選択してください" />
               </SelectTrigger>
@@ -170,7 +188,10 @@ export function NewTournamentForm({ tags }: { tags: Tag[] }) {
             <Select
               name="prefecture"
               value={prefecture}
-              onValueChange={setPrefecture}
+              onValueChange={(v) => {
+                setPrefecture(v);
+                setDirty(true);
+              }}
               disabled={availablePrefectures.length === 0}
             >
               <SelectTrigger>
@@ -202,7 +223,10 @@ export function NewTournamentForm({ tags }: { tags: Tag[] }) {
             <Input
               name="venueName"
               value={venueName}
-              onChange={(e) => setVenueName(e.target.value)}
+              onChange={(e) => {
+                setVenueName(e.target.value);
+                setDirty(true);
+              }}
             />
           </Field>
 
@@ -211,6 +235,7 @@ export function NewTournamentForm({ tags }: { tags: Tag[] }) {
               name="address"
               onPlaceSelected={(details) => {
                 if (details.venueName) setVenueName(details.venueName);
+                setDirty(true);
               }}
             />
           </Field>
@@ -221,9 +246,10 @@ export function NewTournamentForm({ tags }: { tags: Tag[] }) {
             <Input type="number" name="capacity" min={1} />
           </Field>
 
-          <Field label="参加資格" error={state.fieldErrors?.eligibility} required>
-            <Input name="eligibility" required />
+          <Field label="参加資格" error={state.fieldErrors?.eligibility}>
+            <Input name="eligibility" />
           </Field>
+
           <Field label="対象レベル" error={state.fieldErrors?.eligibilityLevel}>
             <Input
               name="eligibilityLevel"
@@ -231,44 +257,33 @@ export function NewTournamentForm({ tags }: { tags: Tag[] }) {
             />
           </Field>
 
-          <Field label="参加費" error={state.fieldErrors?.fee} required>
-            <Input name="fee" required />
+          <Field label="参加費" error={state.fieldErrors?.fee}>
+            <Input name="fee" />
           </Field>
 
           <Field label="持ち物" error={state.fieldErrors?.belongings}>
             <Input name="belongings" />
           </Field>
 
-          <Field label="問い合わせ先" error={state.fieldErrors?.contact} required>
-            <Input name="contact" required />
+          <Field label="問い合わせ先" error={state.fieldErrors?.contact}>
+            <Input name="contact" />
           </Field>
         </Section>
 
         <Section title="タグ">
-          <div className="space-y-4">
-            {Object.entries(tagsByCategory).map(([category, categoryTags]) => (
-              <div key={category}>
-                <p className="mb-2 text-xs font-medium text-muted-foreground">
-                  {TAG_CATEGORY_LABELS[category] ?? category}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {categoryTags.map((tag) => {
-                    const active = selectedTagIds.includes(tag.id);
-                    return (
-                      <button key={tag.id} type="button" onClick={() => toggleTag(tag.id)}>
-                        <Badge
-                          variant={active ? "default" : "secondary"}
-                          className="cursor-pointer transition-colors"
-                        >
-                          {tag.name}
-                        </Badge>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
+          <TagPicker
+            tags={tags}
+            selectedTagIds={selectedTagIds}
+            onSelectedTagIdsChange={(ids) => {
+              setSelectedTagIds(ids);
+              setDirty(true);
+            }}
+            newTagNames={newTagNames}
+            onNewTagNamesChange={(names) => {
+              setNewTagNames(names);
+              setDirty(true);
+            }}
+          />
         </Section>
 
         <Section title="関連リンク">
