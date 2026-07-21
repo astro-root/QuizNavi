@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FileUploadField } from "@/components/organizer/file-upload-field";
-import { LogOut, Trash2, Check, LayoutList } from "lucide-react";
+import { LogOut, Trash2, Check, LayoutList, Heart, PlusCircle } from "lucide-react";
 import Link from "next/link";
 
 const initialState: AccountState = {};
@@ -72,11 +72,23 @@ export function AccountForm({ user }: Props) {
         </form>
       </div>
 
-      <div className="rounded-xl border p-6">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Button variant="outline" className="w-full" asChild>
+          <Link href="/organizer/tournaments/new">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            大会を登録する
+          </Link>
+        </Button>
         <Button variant="outline" className="w-full" asChild>
           <Link href="/organizer/tournaments">
             <LayoutList className="mr-2 h-4 w-4" />
             主催した大会を管理する
+          </Link>
+        </Button>
+        <Button variant="outline" className="w-full" asChild>
+          <Link href="/favorites">
+            <Heart className="mr-2 h-4 w-4" />
+            お気に入りの大会
           </Link>
         </Button>
       </div>

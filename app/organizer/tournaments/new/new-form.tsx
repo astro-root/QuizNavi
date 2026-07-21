@@ -1,8 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { updateTournament } from "../../actions";
-import type { CreateTournamentState } from "../../actions";
+import { createTournamentDraft, type CreateTournamentState } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,28 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileUploadField } from "@/components/organizer/file-upload-field";
-import { AddressAutocomplete } from "@/components/organizer/address-autocomplete";
 import { Loader2 } from "lucide-react";
 import { PREFECTURE_LABELS, TAG_CATEGORY_LABELS } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import type { Tournament } from "@prisma/client";
-
-type Tag = { id: string; name: string; category: string };
-
-const initialState: CreateTournamentState = {};
-
-const REGIONS = [
-  ["HOKKAIDO", "北海道"],
-  ["TOHOKU", "東北"],
-  ["KANTO", "関東"],
-  ["CHUBU", "中部"],
-  ["KINKI", "近畿"],
-  ["CHUGOKU", "中国"],
-  ["SHIKOKU", "四国"],
-  ["KYUSHU_OKINAWA", "九州・沖縄"],
-  ["ONLINE_ONLY", "オンライン限定"],
-];
 
 const REGION_PREFECTURES: Record<string, string[]> = {
   HOKKAIDO: ["HOKKAIDO"],
@@ -67,33 +47,42 @@ const REGION_PREFECTURES: Record<string, string[]> = {
   ],
   ONLINE_ONLY: [],
 };
+import { FileUploadField } from "@/components/organizer/file-upload-field";
+import { AddressAutocomplete } from "@/components/organizer/address-autocomplete";
 
-function toLocalInputValue(date: Date | null): string {
-  if (!date) return "";
-  const d = new Date(date);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours()
-  )}:${pad(d.getMinutes())}`;
-}
+const initialState: CreateTournamentState = {};
 
-export function EditTournamentForm({
-  tournament,
-  tags,
-}: {
-  tournament: Tournament & { tags: { tagId: string }[] };
-  tags: Tag[];
-}) {
-  const updateWithId = updateTournament.bind(null, tournament.id);
-  const [state, formAction, pending] = useActionState(updateWithId, initialState);
+const REGIONS = [
+  ["HOKKAIDO", "北海道"],
+  ["TOHOKU", "東北"],
+  ["KANTO", "関東"],
+  ["CHUBU", "中部"],
+  ["KINKI", "近畿"],
+  ["CHUGOKU", "中国"],
+  ["SHIKOKU", "四国"],
+  ["KYUSHU_OKINAWA", "九州・沖縄"],
+  ["ONLINE_ONLY", "オンライン限定"],
+];
 
-  const [format, setFormat] = useState<string>(tournament.format);
-  const [region, setRegion] = useState(tournament.region ?? "");
-  const [prefecture, setPrefecture] = useState(tournament.prefecture ?? "");
-  const [venueName, setVenueName] = useState(tournament.venueName ?? "");
-  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
-    tournament.tags.map((t) => t.tagId)
+const ELIGIBILITY_LEVELS = [
+  ["ANYONE", "誰でも参加可能"],
+  ["MIDDLE_SCHOOL", "中学生"],
+  ["HIGH_SCHOOL", "高校生"],
+  ["MIDDLE_AND_HIGH", "中高生"],
+  ["BEGINNER_WELCOME", "初心者歓迎"],
+];
+
+type Tag = { id: string; name: string; category: string };
+
+export function NewTournamentForm({ tags }: { tags: Tag[] }) {
+  const [state, formAction, pending] = useActionState(
+    createTournamentDraft,
+    initialState
   );
+  const [format, setFormat] = useState("");
+  const [region, setRegion] = useState("");
+  const [prefecture, setPrefecture] = useState("");
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
   const availablePrefectures = region ? REGION_PREFECTURES[region] ?? [] : [];
 
@@ -112,9 +101,18 @@ export function EditTournamentForm({
     (acc[tag.category] ??= []).push(tag);
     return acc;
   }, {});
+  const [eligibilityLevel, setEligibilityLevel] = useState("ANYONE");
+  const [venueName, setVenueName] = useState("");
 
   return (
-    <>
+    <div className="container max-w-2xl py-12">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold">大会を登録する</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          入力内容は下書きとして保存されます。公開前にいつでも編集できます。
+        </p>
+      </div>
+
       {state.error && (
         <p className="mb-6 animate-in fade-in-0 slide-in-from-top-1 rounded-md bg-destructive/10 p-3 text-sm text-destructive duration-200">
           {state.error}
@@ -127,41 +125,24 @@ export function EditTournamentForm({
         ))}
         <Section title="基本情報">
           <Field label="大会名" error={state.fieldErrors?.name} required>
-            <Input name="name" defaultValue={tournament.name} required />
+            <Input name="name" required />
           </Field>
 
           <Field label="概要" error={state.fieldErrors?.description}>
-            <Textarea
-              name="description"
-              rows={4}
-              defaultValue={tournament.description ?? ""}
-            />
+            <Textarea name="description" rows={4} />
           </Field>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="開催日時" error={state.fieldErrors?.startAt} required>
-              <Input
-                type="datetime-local"
-                name="startAt"
-                defaultValue={toLocalInputValue(tournament.startAt)}
-                required
-              />
+              <Input type="datetime-local" name="startAt" required />
             </Field>
             <Field label="終了日時" error={state.fieldErrors?.endAt}>
-              <Input
-                type="datetime-local"
-                name="endAt"
-                defaultValue={toLocalInputValue(tournament.endAt)}
-              />
+              <Input type="datetime-local" name="endAt" />
             </Field>
           </div>
 
           <Field label="参加締切" error={state.fieldErrors?.entryDeadline}>
-            <Input
-              type="datetime-local"
-              name="entryDeadline"
-              defaultValue={toLocalInputValue(tournament.entryDeadline)}
-            />
+            <Input type="datetime-local" name="entryDeadline" />
           </Field>
 
           <Field label="開催形式" error={state.fieldErrors?.format} required>
@@ -223,7 +204,7 @@ export function EditTournamentForm({
           </Field>
 
           <Field label="市区町村" error={state.fieldErrors?.city}>
-            <Input name="city" defaultValue={tournament.city ?? ""} />
+            <Input name="city" />
           </Field>
 
           <Field label="会場名" error={state.fieldErrors?.venueName}>
@@ -237,7 +218,6 @@ export function EditTournamentForm({
           <Field label="住所" error={state.fieldErrors?.address}>
             <AddressAutocomplete
               name="address"
-              defaultValue={tournament.address ?? ""}
               onPlaceSelected={(details) => {
                 if (details.venueName) setVenueName(details.venueName);
               }}
@@ -247,35 +227,42 @@ export function EditTournamentForm({
 
         <Section title="参加条件">
           <Field label="定員" error={state.fieldErrors?.capacity}>
-            <Input
-              type="number"
-              name="capacity"
-              min={1}
-              defaultValue={tournament.capacity ?? ""}
-            />
+            <Input type="number" name="capacity" min={1} />
           </Field>
 
           <Field label="参加資格" error={state.fieldErrors?.eligibility} required>
-            <Input name="eligibility" defaultValue={tournament.eligibility} required />
+            <Input name="eligibility" required />
           </Field>
+
           <Field label="対象レベル" error={state.fieldErrors?.eligibilityLevel}>
-            <Input
+            <Select
               name="eligibilityLevel"
-              defaultValue={tournament.eligibilityLevel ?? ""}
-              placeholder="例: 高校生以下、初心者歓迎、経験者向け など"
-            />
+              value={eligibilityLevel}
+              onValueChange={setEligibilityLevel}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ELIGIBILITY_LEVELS.map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
 
           <Field label="参加費" error={state.fieldErrors?.fee} required>
-            <Input name="fee" defaultValue={tournament.fee} required />
+            <Input name="fee" required />
           </Field>
 
           <Field label="持ち物" error={state.fieldErrors?.belongings}>
-            <Input name="belongings" defaultValue={tournament.belongings ?? ""} />
+            <Input name="belongings" />
           </Field>
 
           <Field label="問い合わせ先" error={state.fieldErrors?.contact} required>
-            <Input name="contact" defaultValue={tournament.contact} required />
+            <Input name="contact" required />
           </Field>
         </Section>
 
@@ -316,7 +303,7 @@ export function EditTournamentForm({
             error={state.fieldErrors?.logoUrl}
           />
           <Field label="タイムテーブルURL" error={state.fieldErrors?.timetableUrl}>
-            <Input name="timetableUrl" defaultValue={tournament.timetableUrl ?? ""} />
+            <Input name="timetableUrl" placeholder="https://" />
           </Field>
           <FileUploadField
             label="企画書"
@@ -327,16 +314,16 @@ export function EditTournamentForm({
             error={state.fieldErrors?.pdfUrl}
           />
           <Field label="公式サイト" error={state.fieldErrors?.officialSite}>
-            <Input name="officialSite" defaultValue={tournament.officialSite ?? ""} />
+            <Input name="officialSite" placeholder="https://" />
           </Field>
           <Field label="公式X" error={state.fieldErrors?.officialX}>
-            <Input name="officialX" defaultValue={tournament.officialX ?? ""} />
+            <Input name="officialX" placeholder="https://" />
           </Field>
           <Field label="エントリーフォームURL" error={state.fieldErrors?.entryFormUrl}>
-            <Input name="entryFormUrl" defaultValue={tournament.entryFormUrl ?? ""} />
+            <Input name="entryFormUrl" placeholder="https://" />
           </Field>
           <Field label="その他" error={state.fieldErrors?.others}>
-            <Textarea name="others" rows={3} defaultValue={tournament.others ?? ""} />
+            <Textarea name="others" rows={3} />
           </Field>
         </Section>
 
@@ -346,10 +333,10 @@ export function EditTournamentForm({
           className="w-full transition-transform active:scale-[0.98]"
         >
           {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {pending ? "保存中..." : "変更を保存する"}
+          {pending ? "保存中..." : "下書きとして保存"}
         </Button>
       </form>
-    </>
+    </div>
   );
 }
 

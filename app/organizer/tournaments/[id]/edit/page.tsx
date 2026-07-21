@@ -14,7 +14,13 @@ export default async function EditTournamentPage({
   const user = await getCurrentUser();
   if (!user) redirect(`/login?next=/organizer/tournaments/${id}/edit`);
 
-  const tournament = await prisma.tournament.findUnique({ where: { id } });
+  const [tournament, tags] = await Promise.all([
+    prisma.tournament.findUnique({
+      where: { id },
+      include: { tags: { select: { tagId: true } } },
+    }),
+    prisma.tag.findMany({ orderBy: { name: "asc" } }),
+  ]);
 
   if (!tournament || tournament.organizerId !== user.id) {
     notFound();
@@ -23,7 +29,7 @@ export default async function EditTournamentPage({
   return (
     <div className="container max-w-2xl py-12">
       <h1 className="mb-8 text-2xl font-bold">大会を編集する</h1>
-      <EditTournamentForm tournament={tournament} />
+      <EditTournamentForm tournament={tournament} tags={tags} />
     </div>
   );
 }

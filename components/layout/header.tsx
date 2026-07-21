@@ -14,8 +14,6 @@ const NAV_LINKS = [
   { href: "/tournaments?sort=deadline", label: "締切が近い大会" },
   { href: "/announcements", label: "お知らせ" },
   { href: "/contact", label: "お問い合わせ" },
-  { href: "/organizer/tournaments/new", label: "大会を登録する" },
-  { href: "/favorites", label: "お気に入り" },
 ];
 
 export function Header() {

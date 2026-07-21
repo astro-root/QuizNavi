@@ -169,7 +169,7 @@ model Tournament {
 
   capacity       Int?
   eligibility    String
-  eligibilityLevel EligibilityLevel @default(ANYONE)
+  eligibilityLevel String?
   fee            String
   belongings     String?
   contact        String

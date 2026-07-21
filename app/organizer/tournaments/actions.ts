@@ -57,7 +57,7 @@ export async function createTournamentDraft(
     address: formData.get("address")?.toString() || undefined,
     capacity: formData.get("capacity")?.toString() || undefined,
     eligibility: formData.get("eligibility")?.toString() ?? "",
-    eligibilityLevel: formData.get("eligibilityLevel")?.toString() || "ANYONE",
+    eligibilityLevel: formData.get("eligibilityLevel")?.toString() || undefined,
     fee: formData.get("fee")?.toString() ?? "",
     belongings: formData.get("belongings")?.toString() || undefined,
     contact: formData.get("contact")?.toString() ?? "",
@@ -71,7 +71,7 @@ export async function createTournamentDraft(
     entryFormUrl: formData.get("entryFormUrl")?.toString() ?? "",
     entryListUrl: formData.get("entryListUrl")?.toString() ?? "",
     others: formData.get("others")?.toString() || undefined,
-    tagIds: [] as string[],
+    tagIds: formData.getAll("tagIds").map((v) => v.toString()),
   };
 
   const parsed = tournamentSchema.safeParse(raw);
@@ -125,6 +125,9 @@ export async function createTournamentDraft(
       entryListUrl: sanitizedUrls.entryListUrl,
       others: data.others,
       publishStatus: "DRAFT",
+      tags: {
+        create: data.tagIds.map((tagId) => ({ tagId })),
+      },
     },
   });
 
@@ -206,7 +209,7 @@ export async function updateTournament(
     address: formData.get("address")?.toString() || undefined,
     capacity: formData.get("capacity")?.toString() || undefined,
     eligibility: formData.get("eligibility")?.toString() ?? "",
-    eligibilityLevel: formData.get("eligibilityLevel")?.toString() || "ANYONE",
+    eligibilityLevel: formData.get("eligibilityLevel")?.toString() || undefined,
     fee: formData.get("fee")?.toString() ?? "",
     belongings: formData.get("belongings")?.toString() || undefined,
     contact: formData.get("contact")?.toString() ?? "",
@@ -220,7 +223,7 @@ export async function updateTournament(
     entryFormUrl: formData.get("entryFormUrl")?.toString() ?? "",
     entryListUrl: formData.get("entryListUrl")?.toString() ?? "",
     others: formData.get("others")?.toString() || undefined,
-    tagIds: [] as string[],
+    tagIds: formData.getAll("tagIds").map((v) => v.toString()),
   };
 
   const parsed = tournamentSchema.safeParse(raw);
@@ -272,6 +275,10 @@ export async function updateTournament(
       entryFormUrl: sanitizedUrls.entryFormUrl,
       entryListUrl: sanitizedUrls.entryListUrl,
       others: data.others,
+      tags: {
+        deleteMany: {},
+        create: data.tagIds.map((tagId) => ({ tagId })),
+      },
     },
   });
 
