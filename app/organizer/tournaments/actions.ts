@@ -281,10 +281,6 @@ export async function updateTournament(
     createdTagIds.push(tag.id);
   }
   const allTagIds = [...new Set([...data.tagIds, ...createdTagIds])];
-  for (const field of URL_FIELDS) {
-    const value = data[field];
-    sanitizedUrls[field] = value ? sanitizeUrl(value) : null;
-  }
 
   await prisma.tournament.update({
     where: { id: tournamentId },

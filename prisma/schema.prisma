@@ -93,9 +93,7 @@ enum TournamentStatus {
 
 enum PublishStatus {
   DRAFT
-  PENDING
   PUBLISHED
-  REJECTED
 }
 
 enum TagCategory {
@@ -125,7 +123,6 @@ model User {
   updatedAt     DateTime @updatedAt
 
   tournaments   Tournament[] @relation("OrganizerTournaments")
-  approvals     ApprovalLog[] @relation("ApprovedByAdmin")
   favorites     Favorite[]
 
   @@index([role])
@@ -196,7 +193,6 @@ model Tournament {
   updatedAt      DateTime          @updatedAt
 
   tags           TournamentTag[]
-  approvalLogs   ApprovalLog[]
   favoritedBy    Favorite[]
 
   @@index([status])
@@ -218,24 +214,6 @@ model TournamentTag {
   @@id([tournamentId, tagId])
   @@index([tagId])
   @@map("tournament_tags")
-}
-
-model ApprovalLog {
-  id           String        @id @default(uuid())
-  tournamentId String
-  tournament   Tournament    @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-
-  adminId      String
-  admin        User          @relation("ApprovedByAdmin", fields: [adminId], references: [id])
-
-  fromStatus   PublishStatus
-  toStatus     PublishStatus
-  comment      String?
-
-  createdAt    DateTime      @default(now())
-
-  @@index([tournamentId])
-  @@map("approval_logs")
 }
 
 model Favorite {

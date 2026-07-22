@@ -9,21 +9,18 @@ import {
   formatDateJa,
 } from "@/lib/utils";
 import { PublishControls } from "./publish-controls";
+import { computeTournamentStatus } from "@/lib/tournament-status";
 import { ResultForm } from "./result-form";
 import { Trophy } from "lucide-react";
 
 const PUBLISH_STATUS_LABEL: Record<string, string> = {
   DRAFT: "下書き",
-  PENDING: "承認待ち",
   PUBLISHED: "公開中",
-  REJECTED: "却下",
 };
 
 const PUBLISH_STATUS_STYLE: Record<string, string> = {
   DRAFT: "bg-muted text-muted-foreground",
-  PENDING: "bg-amber-500/10 text-amber-600",
   PUBLISHED: "bg-emerald-500/10 text-emerald-600",
-  REJECTED: "bg-destructive/10 text-destructive",
 };
 
 export const dynamic = "force-dynamic";
@@ -45,6 +42,8 @@ export default async function OrganizerTournamentDetailPage({
   if (!tournament || tournament.organizerId !== user.id) {
     notFound();
   }
+
+  const displayStatus = computeTournamentStatus(tournament);
 
   return (
     <div className="container max-w-2xl py-10">
@@ -115,7 +114,7 @@ export default async function OrganizerTournamentDetailPage({
         </div>
       </div>
 
-      {tournament.status === "FINISHED" && (
+      {displayStatus === "FINISHED" && (
         <div className="mb-4">
           <ResultForm
             tournamentId={tournament.id}

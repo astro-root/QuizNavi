@@ -6,9 +6,7 @@ import { Button } from "@/components/ui/button";
 
 const STATUS_LABEL: Record<string, string> = {
   DRAFT: "下書き",
-  PENDING: "承認待ち",
   PUBLISHED: "公開中",
-  REJECTED: "却下",
 };
 
 export default async function OrganizerTournamentsPage() {

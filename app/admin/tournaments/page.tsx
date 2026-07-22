@@ -5,9 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 const STATUS_LABEL: Record<string, string> = {
   DRAFT: "下書き",
-  PENDING: "承認待ち",
   PUBLISHED: "公開中",
-  REJECTED: "却下",
 };
 
 export const dynamic = "force-dynamic";

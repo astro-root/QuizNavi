@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
+import { computeTournamentStatus } from "@/lib/tournament-status";
 import { FavoriteButton } from "@/components/tournaments/favorite-button";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
@@ -138,6 +139,7 @@ export default async function TournamentDetailPage({
     isFavorited = Boolean(favorite);
   }
 
+  const displayStatus = computeTournamentStatus(tournament);
   const isOnline = tournament.format === "ONLINE";
   // 公開済みの大会は publishRequirementsSchema により必須項目が保証されている
 
@@ -195,8 +197,8 @@ export default async function TournamentDetailPage({
         <div className="p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
             <h1 className="text-2xl font-bold leading-snug">{tournament.name}</h1>
-            <Badge className={STATUS_BADGE_STYLE[tournament.status]} variant="outline">
-              {STATUS_LABELS[tournament.status]}
+            <Badge className={STATUS_BADGE_STYLE[displayStatus]} variant="outline">
+              {STATUS_LABELS[displayStatus]}
             </Badge>
           </div>
 
@@ -275,7 +277,7 @@ export default async function TournamentDetailPage({
         </InfoCard>
       </div>
 
-      {tournament.status === "FINISHED" && tournament.resultText && (
+      {displayStatus === "FINISHED" && tournament.resultText && (
         <div className="mb-6 animate-in fade-in-0 slide-in-from-bottom-2 rounded-xl border bg-card p-5 shadow-sm duration-500 [animation-delay:120ms] fill-mode-both">
           <p className="mb-2 text-sm font-semibold text-muted-foreground">大会結果</p>
           <p className="whitespace-pre-wrap text-sm">{tournament.resultText}</p>
