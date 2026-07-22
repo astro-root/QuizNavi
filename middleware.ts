@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const PROTECTED_PREFIXES = ["/organizer", "/admin", "/account", "/favorites"];
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -29,7 +31,11 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && request.nextUrl.pathname.startsWith("/organizer")) {
+  const isProtectedPath = PROTECTED_PREFIXES.some((prefix) =>
+    request.nextUrl.pathname.startsWith(prefix)
+  );
+
+  if (!user && isProtectedPath) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("next", request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
@@ -38,6 +44,9 @@ export async function middleware(request: NextRequest) {
   return response;
 }
 
+// 注意: middlewareはログイン有無のみをチェックする(未ログインなら/loginへ)。
+// /admin配下のADMIN権限チェックなど、より詳細な認可は各ページ側の
+// requireAdmin() / getCurrentUser() で個別に行っている(二重防御)。
 export const config = {
-  matcher: ["/organizer/:path*", "/admin/:path*", "/account/:path*", "/favorites/:path*"],
+  matcher: PROTECTED_PREFIXES.map((p) => `${p}/:path*`),
 };

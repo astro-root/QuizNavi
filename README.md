@@ -19,7 +19,7 @@
 - 登録した大会の一覧・詳細・編集
 - 大会の公開/非公開の切り替え
 - 大会ロゴ・企画書PDFのアップロード
-- 会場住所のオートコンプリート入力(Google Places API)
+- 会場住所のオートコンプリート入力(OpenStreetMap Nominatim)
 - 終了した大会の結果報告
 
 ### 管理者向け(要ADMIN権限)
@@ -59,7 +59,6 @@
 | `DIRECT_URL` | Supabase Postgres直接接続文字列(マイグレーション用) |
 | `NEXT_PUBLIC_SITE_URL` | サイトのベースURL |
 | `NEXT_PUBLIC_SITE_NAME` | サイト名 |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Google Maps Platform APIキー(住所オートコンプリート用) |
 
 ### Supabase側の設定
 
@@ -70,7 +69,9 @@
 ### Google Cloud Console側の設定
 
 1. OAuthクライアントIDを発行し、承認済みリダイレクトURIにSupabaseのコールバックURLを設定
-2. Places API (New) を有効化し、APIキーを発行(住所オートコンプリート機能を使う場合)
+2. 住所オートコンプリートはOpenStreetMap Nominatim(https://nominatim.openstreetmap.org)を利用しており、APIキーは不要
+
+> 注意: Nominatimの利用ポリシーはタイプアヘッド/オートコンプリート用途での直接利用を推奨していません。個人開発・低トラフィックでの利用を想定していますが、本番運用でアクセス数が増える場合はセルフホストまたは商用ジオコーディングサービスへの移行を検討してください。
 
 ### インストールと起動
 
