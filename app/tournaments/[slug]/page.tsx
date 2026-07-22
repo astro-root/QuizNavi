@@ -19,7 +19,7 @@ import {
   Clock,
   ScrollText,
   ListChecks,
-  Trophy,
+  ImageOff,
 } from "lucide-react";
 import {
   REGION_LABELS,
@@ -190,7 +190,7 @@ export default async function TournamentDetailPage({
               className="h-full w-full object-cover"
             />
           ) : (
-            <Trophy className="h-14 w-14 text-muted-foreground/30" />
+            <ImageOff className="h-14 w-14 text-muted-foreground/30" />
           )}
         </div>
 
