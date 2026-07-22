@@ -144,11 +144,40 @@ async function assertOwnership(tournamentId: string, userId: string) {
   return tournament;
 }
 
-export async function publishTournament(tournamentId: string) {
+export type PublishState = {
+  error?: string;
+  fieldErrors?: Record<string, string>;
+};
+
+export async function publishTournament(
+  tournamentId: string
+): Promise<PublishState> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  await assertOwnership(tournamentId, user.id);
+  const tournament = await assertOwnership(tournamentId, user.id);
+
+  const parsed = publishRequirementsSchema.safeParse({
+    name: tournament.name,
+    startAt: tournament.startAt,
+    format: tournament.format,
+    prefecture: tournament.prefecture,
+    eligibility: tournament.eligibility,
+    fee: tournament.fee,
+    contact: tournament.contact,
+  });
+
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      const key = issue.path[0]?.toString() ?? "form";
+      if (!fieldErrors[key]) fieldErrors[key] = issue.message;
+    }
+    return {
+      error: "公開するには以下の項目を入力してください",
+      fieldErrors,
+    };
+  }
 
   await prisma.tournament.update({
     where: { id: tournamentId },

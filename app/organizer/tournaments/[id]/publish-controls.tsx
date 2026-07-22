@@ -7,8 +7,18 @@ import {
   deleteTournament,
 } from "../actions";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Trash2, ExternalLink, Pencil } from "lucide-react";
+import { Eye, EyeOff, Trash2, ExternalLink, Pencil, AlertCircle } from "lucide-react";
 import Link from "next/link";
+
+const FIELD_LABELS: Record<string, string> = {
+  name: "大会名",
+  startAt: "開催日時",
+  format: "開催形式",
+  prefecture: "都道府県",
+  eligibility: "参加資格",
+  fee: "参加費",
+  contact: "問い合わせ先",
+};
 
 export function PublishControls({
   tournamentId,
@@ -21,6 +31,20 @@ export function PublishControls({
 }) {
   const [pending, startTransition] = useTransition();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [publishError, setPublishError] = useState<{
+    error?: string;
+    fieldErrors?: Record<string, string>;
+  } | null>(null);
+
+  const handlePublish = () => {
+    setPublishError(null);
+    startTransition(async () => {
+      const result = await publishTournament(tournamentId);
+      if (result?.error) {
+        setPublishError(result);
+      }
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -61,11 +85,28 @@ export function PublishControls({
             <p className="mb-3 text-sm text-muted-foreground">
               この大会はまだ公開されていません。準備ができたら公開しましょう。
             </p>
+
+            {publishError && (
+              <div className="mb-3 animate-in fade-in-0 slide-in-from-top-1 rounded-md bg-destructive/10 p-3 text-sm text-destructive duration-200">
+                <div className="mb-1 flex items-center gap-2 font-medium">
+                  <AlertCircle className="h-4 w-4" />
+                  {publishError.error}
+                </div>
+                {publishError.fieldErrors && (
+                  <ul className="ml-6 list-disc space-y-0.5 text-xs">
+                    {Object.entries(publishError.fieldErrors).map(([key, msg]) => (
+                      <li key={key}>
+                        {FIELD_LABELS[key] ?? key}: {msg}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+
             <Button
               disabled={pending}
-              onClick={() =>
-                startTransition(() => publishTournament(tournamentId))
-              }
+              onClick={handlePublish}
               className="transition-transform active:scale-[0.98]"
             >
               <Eye className="mr-2 h-4 w-4" />
@@ -82,7 +123,6 @@ export function PublishControls({
         <p className="mb-4 text-xs text-muted-foreground">
           この操作は取り消せません。
         </p>
-
         {!confirmingDelete ? (
           <Button variant="destructive" onClick={() => setConfirmingDelete(true)}>
             <Trash2 className="mr-2 h-4 w-4" />
