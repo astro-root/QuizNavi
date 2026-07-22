@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { tournamentDraftSchema, publishRequirementsSchema } from "@/lib/validations/tournament";
 import { sanitizeUrl } from "@/lib/security/sanitize";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 function slugify(name: string) {
   const base = name
@@ -41,6 +42,13 @@ export async function createTournamentDraft(
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login?next=/organizer/tournaments/new");
+  }
+
+  const { success: rateLimitOk } = rateLimit(`create-tournament:${user.id}`, 20, 60 * 60 * 1000);
+  if (!rateLimitOk) {
+    return {
+      error: "大会の作成回数が上限に達しました。しばらく時間をおいてから再度お試しください。",
+    };
   }
 
   const raw = {
