@@ -221,6 +221,17 @@ export async function updateTournament(
 
   await assertOwnership(tournamentId, user.id);
 
+  const { success: rateLimitOk } = rateLimit(
+    `update-tournament:${user.id}`,
+    60,
+    60 * 60 * 1000
+  );
+  if (!rateLimitOk) {
+    return {
+      error: "大会の更新回数が上限に達しました。しばらく時間をおいてから再度お試しください。",
+    };
+  }
+
   const result = parseTournamentFormData(formData);
   if (!result.success) return result.state;
   const { data } = result;
