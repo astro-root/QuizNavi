@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect, useRef } from "react";
 import { updateTournament } from "../../actions";
 import type { CreateTournamentState } from "../../actions";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,9 @@ import {
 } from "@/components/ui/select";
 import { FileUploadField } from "@/components/organizer/file-upload-field";
 import { AddressAutocomplete } from "@/components/organizer/address-autocomplete";
+import { TagPicker } from "@/components/organizer/tag-picker";
 import { Loader2 } from "lucide-react";
-import { PREFECTURE_LABELS, TAG_CATEGORY_LABELS } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { PREFECTURE_LABELS } from "@/lib/utils";
 import type { Tournament } from "@prisma/client";
 
 type Tag = { id: string; name: string; category: string };
@@ -86,7 +86,6 @@ export function EditTournamentForm({
 }) {
   const updateWithId = updateTournament.bind(null, tournament.id);
   const [state, formAction, pending] = useActionState(updateWithId, initialState);
-
   const [format, setFormat] = useState<string>(tournament.format ?? "");
   const [region, setRegion] = useState(tournament.region ?? "");
   const [prefecture, setPrefecture] = useState(tournament.prefecture ?? "");
@@ -94,24 +93,26 @@ export function EditTournamentForm({
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
     tournament.tags.map((t) => t.tagId)
   );
+  const [newTagNames, setNewTagNames] = useState<string[]>([]);
+  const [dirty, setDirty] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const availablePrefectures = region ? REGION_PREFECTURES[region] ?? [] : [];
 
   const handleRegionChange = (value: string) => {
     setRegion(value);
     setPrefecture("");
+    setDirty(true);
   };
 
-  const toggleTag = (tagId: string) => {
-    setSelectedTagIds((prev) =>
-      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
-    );
-  };
-
-  const tagsByCategory = tags.reduce<Record<string, Tag[]>>((acc, tag) => {
-    (acc[tag.category] ??= []).push(tag);
-    return acc;
-  }, {});
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!dirty) return;
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [dirty]);
 
   return (
     <>
@@ -121,10 +122,20 @@ export function EditTournamentForm({
         </p>
       )}
 
-      <form action={formAction} className="space-y-8">
+      <form
+        ref={formRef}
+        action={formAction}
+        onChange={() => setDirty(true)}
+        onSubmit={() => setDirty(false)}
+        className="space-y-8"
+      >
         {selectedTagIds.map((id) => (
           <input key={id} type="hidden" name="tagIds" value={id} />
         ))}
+        {newTagNames.map((name) => (
+          <input key={name} type="hidden" name="newTagNames" value={name} />
+        ))}
+
         <Section title="基本情報">
           <Field label="大会名" error={state.fieldErrors?.name} required>
             <Input name="name" defaultValue={tournament.name} required />
@@ -137,6 +148,7 @@ export function EditTournamentForm({
               defaultValue={tournament.description ?? ""}
             />
           </Field>
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Field label="開催日時" error={state.fieldErrors?.startAt}>
               <Input
@@ -161,8 +173,15 @@ export function EditTournamentForm({
             </Field>
           </div>
 
-          <Field label="開催形式" error={state.fieldErrors?.format} required>
-            <Select name="format" value={format} onValueChange={setFormat}>
+          <Field label="開催形式" error={state.fieldErrors?.format}>
+            <Select
+              name="format"
+              value={format}
+              onValueChange={(v) => {
+                setFormat(v);
+                setDirty(true);
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="選択してください" />
               </SelectTrigger>
@@ -195,7 +214,10 @@ export function EditTournamentForm({
             <Select
               name="prefecture"
               value={prefecture}
-              onValueChange={setPrefecture}
+              onValueChange={(v) => {
+                setPrefecture(v);
+                setDirty(true);
+              }}
               disabled={availablePrefectures.length === 0}
             >
               <SelectTrigger>
@@ -227,7 +249,10 @@ export function EditTournamentForm({
             <Input
               name="venueName"
               value={venueName}
-              onChange={(e) => setVenueName(e.target.value)}
+              onChange={(e) => {
+                setVenueName(e.target.value);
+                setDirty(true);
+              }}
             />
           </Field>
 
@@ -237,6 +262,7 @@ export function EditTournamentForm({
               defaultValue={tournament.address ?? ""}
               onPlaceSelected={(details) => {
                 if (details.venueName) setVenueName(details.venueName);
+                setDirty(true);
               }}
             />
           </Field>
@@ -252,9 +278,10 @@ export function EditTournamentForm({
             />
           </Field>
 
-          <Field label="参加資格" error={state.fieldErrors?.eligibility} required>
+          <Field label="参加資格" error={state.fieldErrors?.eligibility}>
             <Input name="eligibility" defaultValue={tournament.eligibility ?? ""} />
           </Field>
+
           <Field label="対象レベル" error={state.fieldErrors?.eligibilityLevel}>
             <Input
               name="eligibilityLevel"
@@ -263,7 +290,7 @@ export function EditTournamentForm({
             />
           </Field>
 
-          <Field label="参加費" error={state.fieldErrors?.fee} required>
+          <Field label="参加費" error={state.fieldErrors?.fee}>
             <Input name="fee" defaultValue={tournament.fee ?? ""} />
           </Field>
 
@@ -271,36 +298,25 @@ export function EditTournamentForm({
             <Input name="belongings" defaultValue={tournament.belongings ?? ""} />
           </Field>
 
-          <Field label="問い合わせ先" error={state.fieldErrors?.contact} required>
+          <Field label="問い合わせ先" error={state.fieldErrors?.contact}>
             <Input name="contact" defaultValue={tournament.contact ?? ""} />
           </Field>
         </Section>
 
         <Section title="タグ">
-          <div className="space-y-4">
-            {Object.entries(tagsByCategory).map(([category, categoryTags]) => (
-              <div key={category}>
-                <p className="mb-2 text-xs font-medium text-muted-foreground">
-                  {TAG_CATEGORY_LABELS[category] ?? category}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {categoryTags.map((tag) => {
-                    const active = selectedTagIds.includes(tag.id);
-                    return (
-                      <button key={tag.id} type="button" onClick={() => toggleTag(tag.id)}>
-                        <Badge
-                          variant={active ? "default" : "secondary"}
-                          className="cursor-pointer transition-colors"
-                        >
-                          {tag.name}
-                        </Badge>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
+          <TagPicker
+            tags={tags}
+            selectedTagIds={selectedTagIds}
+            onSelectedTagIdsChange={(ids) => {
+              setSelectedTagIds(ids);
+              setDirty(true);
+            }}
+            newTagNames={newTagNames}
+            onNewTagNamesChange={(names) => {
+              setNewTagNames(names);
+              setDirty(true);
+            }}
+          />
         </Section>
 
         <Section title="関連リンク">
