@@ -1,5 +1,14 @@
 import { SITE_NAME } from "@/lib/utils";
-import { Search, Calendar, MapPin, PlusCircle, Heart } from "lucide-react";
+import { Search, Calendar, MapPin, PlusCircle, Heart, Globe } from "lucide-react";
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+      <path d="M18.9 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/>
+    </svg>
+  );
+}
+
 
 export const metadata = {
   title: "このサイトについて",
@@ -86,6 +95,26 @@ export default function AboutPage() {
         <p>
           サービスに関するご意見・ご要望は「お問い合わせ」フォームからお寄せください。
         </p>
+        <div className="flex flex-wrap gap-3 pt-2">
+          <a
+            href="https://astro-root.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-muted"
+          >
+            <Globe className="h-3.5 w-3.5" />
+            公式サイト
+          </a>
+          <a
+            href="https://x.com/root_qscore"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-muted"
+          >
+            <XIcon className="h-3.5 w-3.5" />
+            公式X
+          </a>
+        </div>
       </div>
     </div>
   );
