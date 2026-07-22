@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { TournamentCard } from "@/components/tournaments/tournament-card";
 import { TournamentFilters } from "./tournament-filters";
+import { computeTournamentStatus } from "@/lib/tournament-status";
 import type { Prisma, Region, TournamentFormat, TournamentStatus } from "@prisma/client";
 import type { Metadata } from "next";
 
@@ -41,9 +42,6 @@ export default async function TournamentsPage({
   if (params.format) {
     where.format = params.format as TournamentFormat;
   }
-  if (params.status) {
-    where.status = params.status as TournamentStatus;
-  }
 
   const tagIds = params.tag
     ? Array.isArray(params.tag)
@@ -57,14 +55,22 @@ export default async function TournamentsPage({
   const orderBy: Prisma.TournamentOrderByWithRelationInput =
     params.sort === "deadline" ? { entryDeadline: "asc" } : { startAt: "asc" };
 
-  const [tournaments, tags] = await Promise.all([
+  const [allMatching, tags] = await Promise.all([
     prisma.tournament.findMany({
       where,
       orderBy,
-      take: 50,
+      // statusは動的計算のためDBフィルタできない。取得後に絞り込むので多めに取得する。
+      take: 300,
     }),
     prisma.tag.findMany({ orderBy: { name: "asc" } }),
   ]);
+
+  const statusFilter = params.status as TournamentStatus | undefined;
+  const tournaments = (
+    statusFilter
+      ? allMatching.filter((t) => computeTournamentStatus(t) === statusFilter)
+      : allMatching
+  ).slice(0, 50);
 
   return (
     <div className="container py-10">

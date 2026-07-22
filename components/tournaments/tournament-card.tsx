@@ -10,6 +10,8 @@ import {
   STATUS_BADGE_STYLE,
   formatDateJa,
 } from "@/lib/utils";
+import { computeTournamentStatus } from "@/lib/tournament-status";
+import type { TournamentStatus } from "@prisma/client";
 
 type TournamentCardProps = {
   tournament: {
@@ -17,17 +19,21 @@ type TournamentCardProps = {
     slug: string;
     name: string;
     startAt: Date | null;
+    endAt: Date | null;
+    entryDeadline: Date | null;
     format: string | null;
     region: string | null;
     prefecture: string | null;
     city: string | null;
     capacity: number | null;
-    status: string;
+    status: TournamentStatus;
     logoUrl: string | null;
   };
 };
 
 export function TournamentCard({ tournament }: TournamentCardProps) {
+  const displayStatus = computeTournamentStatus(tournament);
+
   const locationLabel =
     tournament.format === "ONLINE"
       ? "オンライン開催"
@@ -54,16 +60,14 @@ export function TournamentCard({ tournament }: TournamentCardProps) {
             <Trophy className="h-10 w-10 text-muted-foreground/30" />
           )}
         </div>
-
         <CardHeader className="flex flex-row items-start justify-between gap-2 pb-2">
           <h3 className="line-clamp-2 font-semibold leading-snug transition-colors group-hover:text-primary">
             {tournament.name}
           </h3>
-          <Badge className={STATUS_BADGE_STYLE[tournament.status]} variant="outline">
-            {STATUS_LABELS[tournament.status]}
+          <Badge className={STATUS_BADGE_STYLE[displayStatus]} variant="outline">
+            {STATUS_LABELS[displayStatus]}
           </Badge>
         </CardHeader>
-
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 shrink-0" />
