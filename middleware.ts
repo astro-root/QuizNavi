@@ -48,5 +48,5 @@ export async function middleware(request: NextRequest) {
 // /admin配下のADMIN権限チェックなど、より詳細な認可は各ページ側の
 // requireAdmin() / getCurrentUser() で個別に行っている(二重防御)。
 export const config = {
-  matcher: PROTECTED_PREFIXES.map((p) => `${p}/:path*`),
+  matcher: ["/organizer/:path*", "/admin/:path*", "/account/:path*", "/favorites/:path*"],
 };
