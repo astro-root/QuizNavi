@@ -1,6 +1,10 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 
+// ビルド時にDBへ問い合わせるとSupabase側の一時的な接続不調でビルド全体が失敗するため、
+// リクエスト時に生成する(ビルドをDB接続に依存させない)。
+export const dynamic = "force-dynamic";
+
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
