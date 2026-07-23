@@ -44,7 +44,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja" suppressHydrationWarning>
-      <body className={`${notoSansJp.variable} font-sans antialiased`}>
+      <body className={`${notoSansJp.variable} overflow-x-hidden font-sans antialiased`}>
         <ThemeProvider>
           <QueryProvider>
             <div className="flex min-h-screen flex-col">

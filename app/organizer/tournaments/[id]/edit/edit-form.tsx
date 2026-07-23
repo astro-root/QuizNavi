@@ -155,6 +155,7 @@ export function EditTournamentForm({
                 type="datetime-local"
                 name="startAt"
                 defaultValue={toLocalInputValue(tournament.startAt)}
+                className="w-full min-w-0"
               />
             </Field>
             <Field label="終了日時" error={state.fieldErrors?.endAt}>
@@ -162,6 +163,7 @@ export function EditTournamentForm({
                 type="datetime-local"
                 name="endAt"
                 defaultValue={toLocalInputValue(tournament.endAt)}
+                className="w-full min-w-0"
               />
             </Field>
             <Field label="参加締切" error={state.fieldErrors?.entryDeadline}>
@@ -169,6 +171,7 @@ export function EditTournamentForm({
                 type="datetime-local"
                 name="entryDeadline"
                 defaultValue={toLocalInputValue(tournament.entryDeadline)}
+                className="w-full min-w-0"
               />
             </Field>
           </div>
@@ -393,7 +396,7 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-2">
+    <div className="min-w-0 space-y-2">
       <Label>
         {label}
         {required && <span className="ml-1 text-destructive">*</span>}

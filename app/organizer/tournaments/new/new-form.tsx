@@ -137,13 +137,13 @@ export function NewTournamentForm({ tags }: { tags: Tag[] }) {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Field label="開催日時" error={state.fieldErrors?.startAt}>
-              <Input type="datetime-local" name="startAt" />
+              <Input type="datetime-local" name="startAt" className="w-full min-w-0" />
             </Field>
             <Field label="終了日時" error={state.fieldErrors?.endAt}>
-              <Input type="datetime-local" name="endAt" />
+              <Input type="datetime-local" name="endAt" className="w-full min-w-0" />
             </Field>
             <Field label="参加締切" error={state.fieldErrors?.entryDeadline}>
-              <Input type="datetime-local" name="entryDeadline" />
+              <Input type="datetime-local" name="entryDeadline" className="w-full min-w-0" />
             </Field>
           </div>
 
@@ -360,7 +360,7 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-2">
+    <div className="min-w-0 space-y-2">
       <Label>
         {label}
         {required && <span className="ml-1 text-destructive">*</span>}
