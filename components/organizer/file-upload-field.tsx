@@ -13,7 +13,17 @@ type Props = {
   accept: string;
   error?: string;
   kind: "image" | "document";
+  defaultValue?: string | null;
 };
+
+function fileNameFromUrl(url: string): string {
+  try {
+    const decoded = decodeURIComponent(url.split("/").pop() ?? "");
+    return decoded || "現在のファイル";
+  } catch {
+    return "現在のファイル";
+  }
+}
 
 export function FileUploadField({
   label,
@@ -22,11 +32,14 @@ export function FileUploadField({
   accept,
   error,
   kind,
+  defaultValue,
 }: Props) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [url, setUrl] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [url, setUrl] = useState<string | null>(defaultValue ?? null);
+  const [fileName, setFileName] = useState<string | null>(
+    defaultValue ? fileNameFromUrl(defaultValue) : null
+  );
   const inputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 

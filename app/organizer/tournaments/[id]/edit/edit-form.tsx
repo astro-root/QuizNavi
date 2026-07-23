@@ -327,6 +327,7 @@ export function EditTournamentForm({
             label="大会ロゴ"
             name="logoUrl"
             bucket="tournament-logos"
+            defaultValue={tournament.logoUrl}
             accept="image/*"
             kind="image"
             error={state.fieldErrors?.logoUrl}
@@ -338,6 +339,7 @@ export function EditTournamentForm({
             label="企画書"
             name="pdfUrl"
             bucket="tournament-documents"
+            defaultValue={tournament.pdfUrl}
             accept="application/pdf"
             kind="document"
             error={state.fieldErrors?.pdfUrl}

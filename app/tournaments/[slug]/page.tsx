@@ -285,6 +285,21 @@ export default async function TournamentDetailPage({
           <p>{tournament.fee}</p>
         </InfoCard>
 
+        <InfoCard icon={ListChecks} label="参加資格">
+          <p className="whitespace-pre-wrap">{tournament.eligibility}</p>
+          {tournament.eligibilityLevel && (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              対象レベル: {tournament.eligibilityLevel}
+            </p>
+          )}
+        </InfoCard>
+
+        {tournament.belongings && (
+          <InfoCard icon={ScrollText} label="持ち物">
+            <p className="whitespace-pre-wrap">{tournament.belongings}</p>
+          </InfoCard>
+        )}
+
         <InfoCard icon={Phone} label="問い合わせ先">
           <p>{tournament.contact}</p>
         </InfoCard>
