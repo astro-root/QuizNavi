@@ -1,25 +1,52 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { updateProfile, logout, deleteAccount, type AccountState } from "./actions";
+import { useActionState, useState, useTransition } from "react";
+import {
+  updateProfile,
+  logout,
+  deleteAccount,
+  markNotificationRead,
+  type AccountState,
+} from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { FileUploadField } from "@/components/organizer/file-upload-field";
-import { LogOut, Trash2, Check, LayoutList, Heart, PlusCircle } from "lucide-react";
+import {
+  LogOut,
+  Trash2,
+  Check,
+  LayoutList,
+  Heart,
+  PlusCircle,
+  Shield,
+  Bell,
+} from "lucide-react";
 import Link from "next/link";
 
 const initialState: AccountState = {};
 
-type Props = {
-  user: { name: string; avatarUrl: string | null; email: string };
+type NotificationItem = {
+  id: string;
+  title: string;
+  body: string;
+  isRead: boolean;
+  createdAt: string;
 };
 
-export function AccountForm({ user }: Props) {
+type Props = {
+  user: { name: string; avatarUrl: string | null; email: string };
+  isAdmin: boolean;
+  notifications: NotificationItem[];
+};
+
+export function AccountForm({ user, isAdmin, notifications }: Props) {
   const [state, formAction, pending] = useActionState(updateProfile, initialState);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [, startMarkRead] = useTransition();
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -72,7 +99,60 @@ export function AccountForm({ user }: Props) {
         </form>
       </div>
 
+      <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">
+          <Bell className="h-4 w-4" />
+          お知らせ
+        </h2>
+        {notifications.length === 0 ? (
+          <p className="text-sm text-muted-foreground">通知はありません</p>
+        ) : (
+          <div className="space-y-3">
+            {notifications.map((n) => (
+              <div
+                key={n.id}
+                className="rounded-lg border p-4"
+              >
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">{n.title}</p>
+                    {!n.isRead && (
+                      <Badge className="text-xs">未読</Badge>
+                    )}
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {n.createdAt}
+                  </span>
+                </div>
+                <p className="mb-3 whitespace-pre-wrap text-sm text-muted-foreground">
+                  {n.body}
+                </p>
+                {!n.isRead && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      startMarkRead(() => markNotificationRead(n.id))
+                    }
+                  >
+                    既読にする
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {isAdmin && (
+          <Button variant="outline" className="w-full" asChild>
+            <Link href="/admin">
+              <Shield className="mr-2 h-4 w-4" />
+              管理画面へ
+            </Link>
+          </Button>
+        )}
         <Button variant="outline" className="w-full" asChild>
           <Link href="/organizer/tournaments/new">
             <PlusCircle className="mr-2 h-4 w-4" />

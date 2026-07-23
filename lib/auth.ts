@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import type { User as PrismaUser } from "@prisma/client";
@@ -13,7 +14,13 @@ export async function getCurrentUser(): Promise<PrismaUser | null> {
   const existing = await prisma.user.findUnique({
     where: { authId: authUser.id },
   });
-  if (existing) return existing;
+  if (existing) {
+    // BANされたアカウントは/bannedへ強制送客する(全ページ共通の関所)。
+    if (existing.isBanned) {
+      redirect("/banned");
+    }
+    return existing;
+  }
 
   const email = authUser.email ?? `${authUser.id}@unknown.local`;
   const name =

@@ -118,12 +118,14 @@ model User {
   email         String   @unique
   name          String
   role          Role     @default(USER)
+  isBanned      Boolean  @default(false)
   avatarUrl     String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   tournaments   Tournament[] @relation("OrganizerTournaments")
   favorites     Favorite[]
+  notifications Notification[]
 
   @@index([role])
   @@map("users")
@@ -240,6 +242,20 @@ model Announcement {
 
   @@index([isPublished, publishedAt])
   @@map("announcements")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
 }
 
 model Inquiry {

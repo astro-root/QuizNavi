@@ -35,6 +35,18 @@ export async function updateProfile(
   return { success: true };
 }
 
+export async function markNotificationRead(notificationId: string) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  await prisma.notification.updateMany({
+    where: { id: notificationId, userId: user.id },
+    data: { isRead: true },
+  });
+
+  revalidatePath("/account");
+}
+
 export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();

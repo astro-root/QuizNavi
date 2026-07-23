@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { DeleteTournamentButton } from "./delete-button";
 
 const STATUS_LABEL: Record<string, string> = {
   DRAFT: "下書き",
@@ -52,12 +53,15 @@ export default async function AdminTournamentsPage() {
                     </span>
                   </td>
                   <td className="p-3">
-                    <Link
-                      href={`/tournaments/${t.slug}`}
-                      className="text-primary hover:underline"
-                    >
-                      表示
-                    </Link>
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href={`/tournaments/${t.slug}`}
+                        className="text-primary hover:underline"
+                      >
+                        表示
+                      </Link>
+                      <DeleteTournamentButton tournamentId={t.id} />
+                    </div>
                   </td>
                 </tr>
               ))}
