@@ -2,6 +2,10 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { LogoutButton } from "./logout-button";
 
+export const metadata = {
+  title: "利用停止中",
+};
+
 export default async function BannedPage() {
   const supabase = await createClient();
   const {

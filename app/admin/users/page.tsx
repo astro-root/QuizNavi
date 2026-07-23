@@ -5,6 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { BanButton } from "./ban-button";
 import { NotifyDialog } from "./notify-dialog";
 
+export const metadata = {
+  title: "ユーザー一覧",
+};
+
 const ROLE_LABEL: Record<string, string> = {
   USER: "一般",
   ORGANIZER: "主催者",

@@ -3,6 +3,10 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { EditTournamentForm } from "./edit-form";
 
+export const metadata = {
+  title: "大会を編集",
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function EditTournamentPage({

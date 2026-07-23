@@ -4,6 +4,10 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 
+export const metadata = {
+  title: "主催した大会",
+};
+
 const STATUS_LABEL: Record<string, string> = {
   DRAFT: "下書き",
   PUBLISHED: "公開中",

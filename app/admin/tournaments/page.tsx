@@ -4,6 +4,10 @@ import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DeleteTournamentButton } from "./delete-button";
 
+export const metadata = {
+  title: "大会管理",
+};
+
 const STATUS_LABEL: Record<string, string> = {
   DRAFT: "下書き",
   PUBLISHED: "公開中",

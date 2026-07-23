@@ -3,6 +3,10 @@ import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MarkReadButton } from "./mark-read-button";
 
+export const metadata = {
+  title: "お問い合わせ管理",
+};
+
 export default async function AdminInquiriesPage() {
   const admin = await requireAdmin();
   if (!admin) redirect("/");

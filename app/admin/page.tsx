@@ -3,6 +3,10 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+export const metadata = {
+  title: "管理画面",
+};
+
 export default async function AdminHomePage() {
   const admin = await requireAdmin();
   if (!admin) redirect("/");

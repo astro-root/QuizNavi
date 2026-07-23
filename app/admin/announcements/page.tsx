@@ -4,6 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { AnnouncementForm } from "./announcement-form";
 import { AnnouncementRow } from "./announcement-row";
 
+export const metadata = {
+  title: "お知らせ管理",
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminAnnouncementsPage() {

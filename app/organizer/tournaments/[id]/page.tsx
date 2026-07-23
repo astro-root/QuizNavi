@@ -13,6 +13,10 @@ import { computeTournamentStatus } from "@/lib/tournament-status";
 import { ResultForm } from "./result-form";
 import { Trophy } from "lucide-react";
 
+export const metadata = {
+  title: "大会の管理",
+};
+
 const PUBLISH_STATUS_LABEL: Record<string, string> = {
   DRAFT: "下書き",
   PUBLISHED: "公開中",
