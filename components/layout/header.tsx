@@ -73,7 +73,6 @@ export function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className="hidden md:inline-flex"
               asChild
             >
               <Link href="/account">

@@ -6,6 +6,7 @@ import { FavoriteButton } from "@/components/tournaments/favorite-button";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Calendar,
   CalendarPlus,
@@ -113,7 +114,7 @@ export default async function TournamentDetailPage({
     where: { slug },
     include: {
       tags: { include: { tag: true } },
-      organizer: { select: { name: true } },
+      organizer: { select: { name: true, avatarUrl: true } },
     },
   });
 
@@ -200,6 +201,18 @@ export default async function TournamentDetailPage({
             <Badge className={STATUS_BADGE_STYLE[displayStatus]} variant="outline">
               {STATUS_LABELS[displayStatus]}
             </Badge>
+          </div>
+
+          <div className="mb-4 flex items-center gap-2">
+            <Avatar className="h-6 w-6">
+              <AvatarImage src={tournament.organizer.avatarUrl ?? undefined} alt={tournament.organizer.name} />
+              <AvatarFallback className="text-xs">
+                {tournament.organizer.name.slice(0, 1)}
+              </AvatarFallback>
+            </Avatar>
+            <p className="text-sm text-muted-foreground">
+              主催: {tournament.organizer.name}
+            </p>
           </div>
 
           <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -304,9 +317,6 @@ export default async function TournamentDetailPage({
         </div>
       )}
 
-      <p className="animate-in fade-in-0 text-xs text-muted-foreground duration-500 [animation-delay:200ms] fill-mode-both">
-        主催: {tournament.organizer.name}
-      </p>
     </div>
   );
 }
