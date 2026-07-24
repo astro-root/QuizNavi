@@ -17,10 +17,24 @@ type SearchParams = {
   format?: string;
   status?: string;
   sort?: string;
-  tag?: string | string[];
+  tagQuery?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  feeMin?: string;
+  feeMax?: string;
 };
 
 export const dynamic = "force-dynamic";
+
+// 参加費は自由記述のため、"1000円"のように半角数字+円のみで書かれている場合だけ数値として扱う。
+const FEE_PATTERN = /^([0-9]+)\s*円$/;
+
+function parseFee(fee: string | null): number | null {
+  if (!fee) return null;
+  const match = fee.trim().match(FEE_PATTERN);
+  if (!match) return null;
+  return Number(match[1]);
+}
 
 export default async function TournamentsPage({
   searchParams,
@@ -42,41 +56,52 @@ export default async function TournamentsPage({
   if (params.format) {
     where.format = params.format as TournamentFormat;
   }
-
-  const tagIds = params.tag
-    ? Array.isArray(params.tag)
-      ? params.tag
-      : [params.tag]
-    : [];
-  if (tagIds.length > 0) {
-    where.tags = { some: { tagId: { in: tagIds } } };
+  if (params.tagQuery) {
+    where.tags = {
+      some: { tag: { name: { contains: params.tagQuery, mode: "insensitive" } } },
+    };
+  }
+  if (params.dateFrom || params.dateTo) {
+    where.startAt = {
+      ...(params.dateFrom ? { gte: new Date(`${params.dateFrom}T00:00:00`) } : {}),
+      ...(params.dateTo ? { lte: new Date(`${params.dateTo}T23:59:59`) } : {}),
+    };
   }
 
   const orderBy: Prisma.TournamentOrderByWithRelationInput =
     params.sort === "deadline" ? { entryDeadline: "asc" } : { startAt: "asc" };
 
-  const [allMatching, tags] = await Promise.all([
-    prisma.tournament.findMany({
-      where,
-      orderBy,
-      // statusは動的計算のためDBフィルタできない。取得後に絞り込むので多めに取得する。
-      take: 300,
-    }),
-    prisma.tag.findMany({ orderBy: { name: "asc" } }),
-  ]);
+  const allMatching = await prisma.tournament.findMany({
+    where,
+    orderBy,
+    // statusは動的計算のためDBフィルタできない。取得後に絞り込むので多めに取得する。
+    take: 300,
+  });
 
   const statusFilter = params.status as TournamentStatus | undefined;
-  const tournaments = (
-    statusFilter
-      ? allMatching.filter((t) => computeTournamentStatus(t) === statusFilter)
-      : allMatching
-  ).slice(0, 50);
+  let filtered = statusFilter
+    ? allMatching.filter((t) => computeTournamentStatus(t) === statusFilter)
+    : allMatching;
+
+  const feeMin = params.feeMin ? Number(params.feeMin) : undefined;
+  const feeMax = params.feeMax ? Number(params.feeMax) : undefined;
+  if (feeMin !== undefined || feeMax !== undefined) {
+    filtered = filtered.filter((t) => {
+      const value = parseFee(t.fee);
+      if (value === null) return false;
+      if (feeMin !== undefined && value < feeMin) return false;
+      if (feeMax !== undefined && value > feeMax) return false;
+      return true;
+    });
+  }
+
+  const tournaments = filtered.slice(0, 50);
 
   return (
     <div className="container py-10">
       <h1 className="mb-6 text-2xl font-bold">大会を探す</h1>
 
-      <TournamentFilters tags={tags} />
+      <TournamentFilters />
 
       {tournaments.length === 0 ? (
         <p className="py-20 text-center text-muted-foreground animate-in fade-in-0 duration-300">
