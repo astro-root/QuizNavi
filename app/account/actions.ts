@@ -68,8 +68,8 @@ export async function deleteAccount(): Promise<AccountState> {
   }
 
   const supabaseAdmin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.NEXT_PUBLIC_ROOT_ACCOUNT_URL!,
+    process.env.ROOT_ACCOUNT_SERVICE_ROLE_KEY!
   );
 
   await prisma.user.delete({ where: { id: user.id } });

@@ -5,9 +5,15 @@ export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_ROOT_ACCOUNT_URL!,
+    process.env.NEXT_PUBLIC_ROOT_ACCOUNT_ANON_KEY!,
     {
+      cookieOptions: {
+        domain: process.env.NEXT_PUBLIC_ROOT_ACCOUNT_COOKIE_DOMAIN,
+        path: "/",
+        sameSite: "lax",
+        secure: true,
+      },
       cookies: {
         getAll() {
           return request.cookies.getAll();
