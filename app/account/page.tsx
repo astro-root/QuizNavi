@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AccountForm } from "./account-form";
+import { RootAccountSection } from "./root-account-section";
 
 export const metadata = {
   title: "アカウント設定",
@@ -20,6 +21,7 @@ export default async function AccountPage() {
   return (
     <div className="container max-w-lg py-12">
       <h1 className="mb-8 text-2xl font-bold">アカウント設定</h1>
+      <RootAccountSection />
       <AccountForm
         user={{ name: user.name, avatarUrl: user.avatarUrl, email: user.email }}
         isAdmin={user.role === "ADMIN"}
